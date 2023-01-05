@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <queue>
+#include <memory>
 
 #include "cGraph.h"
 
@@ -23,24 +24,24 @@ void cGraph::setEdges(const std::string &sEdges)
     while (iss.good())
     {
         iss >> n1 >> n2;
-        findorAdd(n1).addEdge(findorAdd(n2));
+        findorAdd(n1)->addEdge(findorAdd(n2));
     }
 }
-void cVertex::addEdge(cVertex &dst)
+void cVertex::addEdge(vertex_t dst)
 {
     vLinks.push_back(dst);
-    dst.vLinks.push_back(*this);
+    dst->vLinks.push_back(vertex_t(this));
 }
 
-cVertex &cGraph::findorAdd(const std::string &sn)
+vertex_t cGraph::findorAdd(const std::string &sn)
 {
     for (auto &n : vVertex)
     {
-        if (sn == n.get().userName())
+        if (sn == n.get()->userName())
             return n;
     }
     auto v = new cVertex(sn);
-    vVertex.push_back(*v);
+    vVertex.push_back(vertex_t(v));
     return vVertex.back();
 }
 
@@ -50,10 +51,10 @@ std::string cGraph::text()
 
     for (auto &n : vVertex)
     {
-        ss << "node " << n.get().userName() << " linked to ";
-        for (auto &dst : n.get().adjacent())
+        ss << "node " << n->userName() << " linked to ";
+        for (auto &dst : n->adjacent())
         {
-            ss << dst.get().userName() << " ";
+            ss << dst->userName() << " ";
         }
         ss << "\n";
     }
@@ -63,12 +64,12 @@ std::string cGraph::text()
 int cGraph::ID(const std::string &name)
 {
     for (auto &v : vVertex)
-        if (v.get().userName() == name)
-            return v.get().ID();
+        if (v->userName() == name)
+            return v->ID();
     return -1;
 }
 
-void cGraph::bfs(cVertex &start)
+void cGraph::bfs(vertex_t start)
 {
     // queue of vertices with adjacencies to be explored
     std::queue<int> Q;  
@@ -79,15 +80,15 @@ void cGraph::bfs(cVertex &start)
     // vertex that visited immedatly before
     std::vector<int> pred(vVertex.size(), -1);
 
-    std::cout << "bfs " << start.userName() << " ";
-    Q.push(ID(start.userName()));
+    std::cout << "bfs " << start->userName() << " ";
+    Q.push(ID(start->userName()));
     while (Q.size())
     {
         int iv = Q.front();
         Q.pop();
-        for (auto &w : vVertex[iv].get().adjacent())
+        for (auto &w : vVertex[iv]->adjacent())
         {
-            int iw = ID(w.get().userName());
+            int iw = ID(w->userName());
             if (visited[iw])
             {
                 // visited this node before
@@ -97,8 +98,8 @@ void cGraph::bfs(cVertex &start)
                 {
                     if( pred[k] == -1 )
                         continue;
-                    std::cout << vVertex[k].get().userName()
-                        <<" "<< vVertex[pred[k]].get().userName() << "\n";
+                    std::cout << vVertex[k]->userName()
+                        <<" "<< vVertex[pred[k]]->userName() << "\n";
                 }
 
                 std::vector<int> vCycle;
@@ -112,11 +113,11 @@ void cGraph::bfs(cVertex &start)
                 std::reverse(vCycle.begin(),vCycle.end());
                 std::cout << "\ncycle ";
                 for( int ic : vCycle )
-                    std::cout << vVertex[ic].get().userName() << " ";
+                    std::cout << vVertex[ic]->userName() << " ";
 
                 continue;
             }
-            std::cout << w.get().userName() << " ";
+            std::cout << w->userName() << " ";
             Q.push(iw);
             visited[iw] = true;
             pred[iw] = iv;

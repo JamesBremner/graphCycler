@@ -1,37 +1,27 @@
+
+
+
 /// @brief A vertex
 class cVertex
 {
     int myID;            // node ID
     static int myLastID; // ID assigned to most recently constructed node
     std::string myUserName;
-    std::vector<std::reference_wrapper<cVertex>> vLinks; // vertices that this vertex links to
+    std::vector<std::shared_ptr<cVertex>> vLinks; // vertices that this vertex links to
 
 public:
     cVertex() {} // default constructor
     cVertex(const std::string &name);
 
-    /// @brief Random network generator
-    /// @param layerCount
-    /// @param minNodePerLayer
-    /// @param maxNodePerLayer
-    /// @param minEdge
-    /// @param maxEdge
-
-    void RandomGenerator(
-        int layerCount,
-        int minNodePerLayer,
-        int maxNodePerLayer,
-        int minEdge,
-        int maxEdge);
 
     /// @brief Add edge from this node to node in next layer
     /// @param dst pointer to node in next layer
-
-    void addEdge(cVertex &dst);
+ 
+    void addEdge(std::shared_ptr<cVertex> dst);
 
     /// @brief get adjacent nodes
     /// @return
-    std::vector<std::reference_wrapper<cVertex>> &
+    std::vector<std::shared_ptr<cVertex>> &
     adjacent()
     {
         return vLinks;
@@ -48,17 +38,19 @@ public:
     }
 };
 
+typedef std::shared_ptr<cVertex> vertex_t;
+
 class cGraph
 {
 
 public:
-    std::vector<std::reference_wrapper<cVertex>> vVertex;
+    std::vector<vertex_t> vVertex;
 
     void setEdges(const std::string &sEdges);
 
-    cVertex &findorAdd(const std::string &sn);
+    vertex_t findorAdd(const std::string &sn);
 
-    void bfs(cVertex &start);
+    void bfs(vertex_t start);
 
     int ID(const std::string &name);
 
