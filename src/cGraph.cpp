@@ -97,6 +97,37 @@ void cGraph::bfs(
     }
 }
 
+void cGraph::dfs(
+    const std::string &start,
+    std::function<void(vertex_t)> visitor)
+{
+    // track visited vertices
+    std::vector<bool> visited(vVertex.size(), false);
+
+    // vertices waiting to be visited
+    std::stack<vertex_t> wait;
+
+    /*  1 Start by putting one of the graph's vertices on top of a stack.
+        2 Take the top vertex of the stack and add it to the visited list.
+        3 Add sdjscent vertices which aren't in the visited list to the top of the stack.
+        4 Keep repeating steps 2 and 3 until the stack is empty.
+    */
+
+    wait.push(vVertex[index(start)]);
+    while (!wait.empty())
+    {
+        vertex_t v = wait.top();
+        wait.pop();
+        int vi = index(v);
+        visitor(v);
+        visited[vi] = true;
+
+        for (vertex_t w : adjacentOut(v))
+            if (!visited[index(w)])
+                wait.push(w);
+    }
+}
+
 void cGraph::dijsktra(
     vertex_t start,
     std::vector<int> &pred)

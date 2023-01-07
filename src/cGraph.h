@@ -52,12 +52,22 @@ public:
 
     e.g. "a b\nb c" specifies a graph with two edges a -> b -> c
     */
+   
     void setEdges(const std::string &sEdges);
 
     /// @brief breadth first search
     /// @param start 
+    /// @param visitor function called when a new node is reached
 
     void bfs(
+        const std::string & start,
+        std::function<void(vertex_t)> visitor );
+
+    /// @brief depth first search
+    /// @param start 
+    /// @param visitor function called when a new node is reached
+
+    void dfs(
         const std::string & start,
         std::function<void(vertex_t)> visitor );
 
@@ -72,10 +82,6 @@ public:
         vertex_t start,
         std::vector<int> &pred);
 
-    vVertex_t adjacentOut(vertex_t v);
-    vVertex_t adjacentIn(vertex_t v);
-    vVertex_t adjacentAll(vertex_t v);
-
     int ID(const std::string &name);
 
     /// @brief Human readable description
@@ -88,4 +94,8 @@ private:
     vertex_t findorAdd(const std::string &sn);
     int index(const std::string &sn);
     int index(vertex_t v);
+
+    vVertex_t adjacentOut(vertex_t v);
+    vVertex_t adjacentIn(vertex_t v);
+    vVertex_t adjacentAll(vertex_t v);
 };
