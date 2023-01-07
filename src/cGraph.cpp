@@ -128,16 +128,37 @@ void cGraph::dfs(
     }
 }
 
-void cGraph::dijsktra(
-    vertex_t start,
-    std::vector<int> &pred)
+vVertex_t cGraph::path(
+    const std::string &start,
+    const std::string &finish)
+{
+    int si = index(start);
+
+    auto pred = dijsktra(
+        vVertex[si] );
+
+    vVertex_t ret;
+    int vi = index(finish);
+    while (vi != si)
+    {
+        ret.push_back(vVertex[vi]);
+        vi = pred[vi];
+    }
+    ret.push_back(vVertex[si]);
+
+    std::reverse( ret.begin(), ret.end());
+
+    return ret;
+}
+
+std::vector<int> cGraph::dijsktra(
+    vertex_t start)
 {
     // shortest distance from start to each node
     std::vector<double> dist(vVertex.size(), INT_MAX);
 
     // previous node on shortest path to each node
-    pred.clear();
-    pred.resize(vVertex.size(), -1);
+    std::vector<int> pred( vVertex.size(), -1);
 
     std::vector<bool> sptSet(vVertex.size(), false); // sptSet[i] will be true if vertex i is included in shortest
                                                      // path tree or shortest distance from src to i is finalized
@@ -192,6 +213,7 @@ void cGraph::dijsktra(
             }
         }
     }
+    return pred;
 }
 
 vVertex_t cGraph::adjacentOut(vertex_t v)

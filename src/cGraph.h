@@ -50,9 +50,9 @@ public:
     /** @brief populate the graph with edges
        @param sEdges string specifying the edges
 
-    e.g. "a b\nb c" specifies a graph with two edges a -> b -> c
+        e.g. "a b\nb c" specifies a graph with two edges a -> b -> c
     */
-   
+
     void setEdges(const std::string &sEdges);
 
     /// @brief breadth first search
@@ -71,21 +71,31 @@ public:
         const std::string & start,
         std::function<void(vertex_t)> visitor );
 
+    /// @brief Shortest path between vertices using dijsktra algorithm
+    /// @param start name of start vertex
+    /// @param finish name of finish vertex
+    /// @return vector of vertices on path
+
+    vVertex_t path(
+        const std::string & start,
+        const std::string & finish );
+
+    /// @brief Dijsktra path from start to every node
+    /// @param[in] start node
+    /// @return vertex index vector of vertice that precedes each vertex
+
+    std::vector<int> dijsktra(
+        vertex_t start );
+
     /// @brief Depth first search, detecting cycles
     /// @param start name of start vertex
     void dfs_cycle_detector(const std::string &start);
-
-    /// @brief Dijsktra path finder
-    /// @param[in] start node
-    /// @param[out] pred node vector of nodes that precedes indexed node
-    void dijsktra(
-        vertex_t start,
-        std::vector<int> &pred);
 
     int ID(const std::string &name);
 
     /// @brief Human readable description
     /// @return
+
     std::string text();
 
 private:
