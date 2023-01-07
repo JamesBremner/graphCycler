@@ -2,13 +2,15 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <functional>
 
-/// @brief A vertex
+/// @brief A vertex is an element of a graph with edges connected to other vertices
+
 class cVertex
 {
-    int myID;            // node ID
-    static int myLastID; // ID assigned to most recently constructed node
-    std::string myUserName;
+    int myID;                   // node ID
+    static int myLastID;        // ID assigned to most recently constructed node
+    std::string myUserName;     // name assigned to vertex by user ( input specification )
     std::vector<std::shared_ptr<cVertex>> vLinks; // vertices that this vertex links to
 
 public:
@@ -44,21 +46,24 @@ typedef std::vector<vertex_t> vVertex_t;
 
 class cGraph
 {
-
 public:
-    vVertex_t vVertex;
+    /** @brief populate the graph with edges
+       @param sEdges string specifying the edges
 
+    e.g. "a b\nb c" specifies a graph with two edges a -> b -> c
+    */
     void setEdges(const std::string &sEdges);
 
-    vertex_t findorAdd(const std::string &sn);
-    int findIndex(const std::string &sn);
-    int findIndex(vertex_t v);
+    /// @brief breadth first search
+    /// @param start 
 
-    void bfs(vertex_t start);
+    void bfs(
+        const std::string & start,
+        std::function<void(vertex_t)> visitor );
 
     /// @brief Depth first search, detecting cycles
-    /// @param start 
-    void dfs_cycle_detector(vertex_t start);
+    /// @param start name of start vertex
+    void dfs_cycle_detector(const std::string &start);
 
     /// @brief Dijsktra path finder
     /// @param[in] start node
@@ -67,13 +72,20 @@ public:
         vertex_t start,
         std::vector<int> &pred);
 
-    vVertex_t adjacentOut( vertex_t v );
-    vVertex_t adjacentIn( vertex_t v );
-    vVertex_t adjacentAll( vertex_t v );
+    vVertex_t adjacentOut(vertex_t v);
+    vVertex_t adjacentIn(vertex_t v);
+    vVertex_t adjacentAll(vertex_t v);
 
     int ID(const std::string &name);
 
     /// @brief Human readable description
     /// @return
     std::string text();
+
+private:
+    vVertex_t vVertex;
+
+    vertex_t findorAdd(const std::string &sn);
+    int index(const std::string &sn);
+    int index(vertex_t v);
 };

@@ -17,6 +17,7 @@ void cGraph::setEdges(const std::string &sEdges)
 {
     std::istringstream iss(sEdges);
     std::string n1, n2;
+    vVertex.clear();
     while (iss.good())
     {
         iss >> n1 >> n2;
@@ -64,7 +65,9 @@ int cGraph::ID(const std::string &name)
     return -1;
 }
 
-void cGraph::bfs(vertex_t start)
+void cGraph::bfs(
+    const std::string &start,
+    std::function<void(vertex_t)> visitor)
 {
     // queue of vertices with adjacencies to be explored
     std::queue<int> Q;
@@ -72,69 +75,24 @@ void cGraph::bfs(vertex_t start)
     // true for vertex that has been visited
     std::vector<bool> visited(vVertex.size(), false);
 
-    // vertex that visited immedatly before
-    std::vector<int> pred(vVertex.size(), -1);
+    visitor(findorAdd(start));
+    int si = index(start);
+    visited[si] = true;
+    Q.push(si);
 
-    std::cout << "bfs " << start->userName() << " ";
-    Q.push(ID(start->userName()));
     while (Q.size())
     {
         int iv = Q.front();
         Q.pop();
         for (auto &w : vVertex[iv]->adjacent())
         {
-            int iw = ID(w->userName());
-            if (visited[iw])
+            int iw = index(w->userName());
+            if (!visited[iw])
             {
-                // visited this node before
-                // we have found a cycle
-
-                std::vector<int> vCycle;
-                for (auto a : vVertex[iv]->adjacent())
-                {
-                    if (a == w)
-                        continue;
-                    std::vector<int> pred;
-                    dijsktra( a, pred);
-
-                    int ai = findIndex( a->userName() );
-                    int pi = pred[ ai ];
-                    while( pi != ai ) {
-                        vCycle.push_back(pi);
-                        pi = pred[pi];
-                    }
-                }
-                std::cout << "\ncycle ";
-                for( int pi : vCycle )
-                    std::cout << vVertex[pi]->userName() << " ";
-
-                // for( int k = 0; k < vVertex.size(); k++ )
-                // {
-                //     if( pred[k] == -1 )
-                //         continue;
-                //     std::cout << vVertex[k]->userName()
-                //         <<" "<< vVertex[pred[k]]->userName() << "\n";
-                // }
-
-                // std::vector<int> vCycle;
-                // vCycle.push_back(iw);
-                // vCycle.push_back(iv);
-                // int pre = pred[iv];
-                // while( pre != -1 ) {
-                //     vCycle.push_back( pre );
-                //     pre = pred[pre];
-                // }
-                // std::reverse(vCycle.begin(),vCycle.end());
-                // std::cout << "\ncycle ";
-                // for( int ic : vCycle )
-                //     std::cout << vVertex[ic]->userName() << " ";
-
-                continue;
+                visitor(w);
+                visited[iw] = true;
+                Q.push(iw);
             }
-            std::cout << w->userName() << " ";
-            Q.push(iw);
-            visited[iw] = true;
-            pred[iw] = iv;
         }
     }
 }
@@ -205,7 +163,6 @@ void cGraph::dijsktra(
     }
 }
 
-
 vVertex_t cGraph::adjacentOut(vertex_t v)
 {
     return v->adjacent();
@@ -231,7 +188,7 @@ vVertex_t cGraph::adjacentAll(vertex_t v)
     return ret;
 }
 
-int cGraph::findIndex(const std::string &sn)
+int cGraph::index(const std::string &sn)
 {
     int ret = 0;
     for (auto &n : vVertex)
@@ -242,34 +199,41 @@ int cGraph::findIndex(const std::string &sn)
     }
     return -1;
 }
-int cGraph::findIndex(vertex_t v)
+int cGraph::index(vertex_t v)
 {
-    return findIndex(v->userName());
+    return index(v->userName());
 }
 
-void cGraph::dfs_cycle_detector(vertex_t start)
+void cGraph::dfs_cycle_detector(const std::string &start)
 {
+    // track visited vertices
     std::vector<bool> visited(vVertex.size(), false);
+
+    // source vertex of edge used to reach vertex
     vVertex_t pred(vVertex.size(), 0);
 
+    // vertices waiting to be processed
     std::stack<vertex_t> wait;
-    wait.push(start);
 
+    // start at the beginning
+    wait.push(vVertex[index(start)]);
+
+    // continue until no more vertices need processing
     while (!wait.empty())
     {
         vertex_t v = wait.top();
         wait.pop();
-        int vi = findIndex(v);
+        int vi = index(v);
         if (!visited[vi])
         {
             visited[vi] = true;
 
             for (vertex_t w : adjacentOut(v))
             {
-                if (!visited[findIndex(w)])
+                if (!visited[index(w)])
                 {
                     wait.push(w);
-                    pred[findIndex(w)] = v;
+                    pred[index(w)] = v;
                 }
                 else
                 {
@@ -279,12 +243,12 @@ void cGraph::dfs_cycle_detector(vertex_t start)
                     cycle.push_back(w);
                     cycle.push_back(v);
 
-                    vertex_t pv = pred[findIndex(v)];
+                    vertex_t pv = pred[index(v)];
                     cycle.push_back(pv);
                     while (pv != w)
                     {
                         // back track one hop
-                        pv = pred[findIndex(pv)];
+                        pv = pred[index(pv)];
                         cycle.push_back(pv);
                     }
 

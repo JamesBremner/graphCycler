@@ -1,6 +1,4 @@
 
-#include <algorithm>
-
 #include "cGraph.h"
 
 main()
@@ -13,8 +11,8 @@ main()
     std::cout << graph.text();
 
     // run the cycle detector
-    graph.dfs_cycle_detector(graph.vVertex[0]);
+    graph.dfs_cycle_detector("a");
 
-    exit(0);
+    return 0;
 
 }
