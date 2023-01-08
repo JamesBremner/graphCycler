@@ -132,17 +132,26 @@ vVertex_t cGraph::path(
     const std::string &start,
     const std::string &finish)
 {
+    return path(
+        vVertex[index(start)],
+        vVertex[index(finish)]);
+}
+vVertex_t cGraph::path(
+    vertex_t start,
+    vertex_t finish)
+{
     vVertex_t ret;
 
-    int si = index(start);
+    int si = index(start->userName());
 
     auto pred = dijsktra(
         vVertex[si]);
 
-    int vi = index(finish);
-    while ( vi != si )
+    int vi = index(finish->userName());
+    while (vi != si)
     {
-        if( vi == -1 ) {
+        if (vi == -1)
+        {
             ret.clear();
             return ret;
         }
@@ -295,10 +304,11 @@ cGraph::dfs_cycle_finder(const std::string &start)
                 else
                 {
                     // previously visited node, check for ancestor
-                    auto cycle = path( w->userName(), v->userName() );
-                    if( cycle.size() > 0 ) {
+                    auto cycle = path(w, v);
+                    if (cycle.size() > 0)
+                    {
                         // found a cycle
-                        cycle.push_back( w );
+                        cycle.push_back(w);
                         ret.push_back(cycle);
                     }
                 }

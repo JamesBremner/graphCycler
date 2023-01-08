@@ -85,6 +85,16 @@ public:
         const std::string & start,
         const std::string & finish );
 
+    /// @brief Shortest path between vertices using dijsktra algorithm
+    /// @param start start vertex
+    /// @param finish finish vertex
+    /// @return vector of vertices on path
+
+    vVertex_t path(
+        vertex_t start,
+        vertex_t finish );
+
+
     /// @brief Dijsktra path from start to every node
     /// @param[in] start node
     /// @return vertex index vector of vertice that precedes each vertex

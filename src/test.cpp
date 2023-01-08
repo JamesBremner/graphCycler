@@ -64,16 +64,28 @@ TEST(cycle_finder)
     // construct test graph
     cGraph graph;
 
+    // one cycle
     graph.setEdges("a b\nb c\nc d\nd a");
     std::vector<std::string> expected1{"a", "b", "c", "d", "a"};
     auto vCycle = graph.dfs_cycle_finder("a");
-    CHECK_EQUAL( vCycle.size(), 1 );
+    CHECK_EQUAL(vCycle.size(), 1);
     for (int k = 0; k < expected1.size(); k++)
         CHECK_EQUAL(vCycle[0][k]->userName(), expected1[k]);
 
+    // no cycle ( directed )
     graph.setEdges("a b\nb c\nc d\na x\nx y\ny d");
     vCycle = graph.dfs_cycle_finder("a");
-    CHECK_EQUAL( vCycle.size(), 0 );
+    CHECK_EQUAL(vCycle.size(), 0);
+
+    // two cycles 
+    graph.setEdges("a b\nb c\nc d\nd a\nc a");
+    vCycle = graph.dfs_cycle_finder("a");
+    CHECK_EQUAL(vCycle.size(), 2);
+    std::vector<std::string> expected0{"a", "b", "c", "a"};
+    for (int k = 0; k < expected0.size(); k++)
+        CHECK_EQUAL(vCycle[0][k]->userName(), expected0[k]);
+    for (int k = 0; k < expected1.size(); k++)
+        CHECK_EQUAL(vCycle[1][k]->userName(), expected1[k]);
 }
 
 main()
