@@ -55,6 +55,11 @@ public:
 
     void setEdges(const std::string &sEdges);
 
+    /// @brief Human readable description
+    /// @return
+
+    std::string text();
+
     /// @brief breadth first search
     /// @param start 
     /// @param visitor function called when a new node is reached
@@ -87,16 +92,15 @@ public:
     std::vector<int> dijsktra(
         vertex_t start );
 
-    /// @brief Depth first search, detecting cycles
+    /// @brief Depth first search, finding cycles in directed graph
     /// @param start name of start vertex
-    void dfs_cycle_detector(const std::string &start);
+    /// @return vector of vectors, each with the vertices in a cycle
+
+    std::vector< std::vector< vertex_t> >
+    dfs_cycle_finder(
+        const std::string &start);
 
     int ID(const std::string &name);
-
-    /// @brief Human readable description
-    /// @return
-
-    std::string text();
 
 private:
     vVertex_t vVertex;

@@ -11,7 +11,7 @@ main()
     std::cout << graph.text();
 
     // run the cycle detector
-    graph.dfs_cycle_detector("a");
+    graph.dfs_cycle_finder("a");
 
     return 0;
 

@@ -132,21 +132,26 @@ vVertex_t cGraph::path(
     const std::string &start,
     const std::string &finish)
 {
+    vVertex_t ret;
+
     int si = index(start);
 
     auto pred = dijsktra(
-        vVertex[si] );
+        vVertex[si]);
 
-    vVertex_t ret;
     int vi = index(finish);
-    while (vi != si)
+    while ( vi != si )
     {
+        if( vi == -1 ) {
+            ret.clear();
+            return ret;
+        }
         ret.push_back(vVertex[vi]);
         vi = pred[vi];
     }
     ret.push_back(vVertex[si]);
 
-    std::reverse( ret.begin(), ret.end());
+    std::reverse(ret.begin(), ret.end());
 
     return ret;
 }
@@ -158,7 +163,7 @@ std::vector<int> cGraph::dijsktra(
     std::vector<double> dist(vVertex.size(), INT_MAX);
 
     // previous node on shortest path to each node
-    std::vector<int> pred( vVertex.size(), -1);
+    std::vector<int> pred(vVertex.size(), -1);
 
     std::vector<bool> sptSet(vVertex.size(), false); // sptSet[i] will be true if vertex i is included in shortest
                                                      // path tree or shortest distance from src to i is finalized
@@ -257,13 +262,13 @@ int cGraph::index(vertex_t v)
     return index(v->userName());
 }
 
-void cGraph::dfs_cycle_detector(const std::string &start)
+std::vector<std::vector<vertex_t>>
+cGraph::dfs_cycle_finder(const std::string &start)
 {
+    std::vector<std::vector<vertex_t>> ret;
+
     // track visited vertices
     std::vector<bool> visited(vVertex.size(), false);
-
-    // source vertex of edge used to reach vertex
-    vVertex_t pred(vVertex.size(), 0);
 
     // vertices waiting to be processed
     std::stack<vertex_t> wait;
@@ -286,34 +291,19 @@ void cGraph::dfs_cycle_detector(const std::string &start)
                 if (!visited[index(w)])
                 {
                     wait.push(w);
-                    pred[index(w)] = v;
                 }
                 else
                 {
-                    // previously visited node - a cycle
-                    vVertex_t cycle;
-
-                    cycle.push_back(w);
-                    cycle.push_back(v);
-
-                    vertex_t pv = pred[index(v)];
-                    cycle.push_back(pv);
-                    while (pv != w)
-                    {
-                        // back track one hop
-                        pv = pred[index(pv)];
-                        cycle.push_back(pv);
+                    // previously visited node, check for ancestor
+                    auto cycle = path( w->userName(), v->userName() );
+                    if( cycle.size() > 0 ) {
+                        // found a cycle
+                        cycle.push_back( w );
+                        ret.push_back(cycle);
                     }
-
-                    std::reverse(cycle.begin(), cycle.end());
-
-                    // display cycle
-                    std::cout << "cycle: ";
-                    for (vertex_t vc : cycle)
-                        std::cout << vc->userName() << " ";
-                    std::cout << "\n";
                 }
             }
         }
     }
+    return ret;
 }
