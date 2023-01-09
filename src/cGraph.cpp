@@ -21,12 +21,39 @@ void cGraph::setEdges(const std::string &sEdges)
     while (iss.good())
     {
         iss >> n1 >> n2;
-        findorAdd(n1)->addEdge(findorAdd(n2));
+        addEdge(findorAdd(n1), findorAdd(n2));
     }
 }
-void cVertex::addEdge(vertex_t dst)
+void cGraph::setEdges(
+    const std::string &sEdges,
+    int countAttributes)
 {
-    vLinks.push_back(dst);
+    std::istringstream iss(sEdges);
+    std::string n1, n2, sattr;
+
+    vVertex.clear();
+    vEdgeAttr.clear();
+    vEdgeDst.clear();
+
+    while (iss.good())
+    {
+        iss >> n1 >> n2;
+        sattr = "";
+        std::vector<std::string> vattr;
+        std::string sattr_one;
+        for( int k = 0; k < countAttributes; k++ )
+        {
+            iss >> sattr_one;
+            vattr.push_back(sattr_one);
+        }
+        vEdgeAttr.push_back( vattr );
+        addEdge(findorAdd(n1), findorAdd(n2));
+    }
+}
+void cGraph::addEdge(vertex_t src, vertex_t dst)
+{
+    vEdgeDst.push_back(index(dst));
+    src->addEdge(vEdgeDst.size() - 1);
 }
 
 vertex_t cGraph::findorAdd(const std::string &sn)
@@ -48,7 +75,7 @@ std::string cGraph::text()
     for (auto &n : vVertex)
     {
         ss << "node " << n->userName() << " linked to ";
-        for (auto &dst : n->adjacent())
+        for (auto &dst : adjacentOut(n))
         {
             ss << dst->userName() << " ";
         }
@@ -84,7 +111,8 @@ void cGraph::bfs(
     {
         int iv = Q.front();
         Q.pop();
-        for (auto &w : vVertex[iv]->adjacent())
+
+        for (auto &w : adjacentOut(vVertex[iv]))
         {
             int iw = index(w->userName());
             if (!visited[iw])
@@ -208,7 +236,7 @@ std::vector<int> cGraph::dijsktra(
         sptSet[uidx] = true;
 
         // Update dist value of the adjacent vertices of the picked vertex.
-        for (auto vp : vVertex[uidx]->adjacent())
+        for (auto vp : adjacentOut(vVertex[uidx]))
         {
             int vidx = std::distance(
                 vVertex.begin(),
@@ -232,17 +260,23 @@ std::vector<int> cGraph::dijsktra(
 
 vVertex_t cGraph::adjacentOut(vertex_t v)
 {
-    return v->adjacent();
+    vVertex_t ret;
+    for (int i : v->outEdges())
+    {
+        ret.push_back(vVertex[vEdgeDst[i]]);
+    }
+    return ret;
 }
 vVertex_t cGraph::adjacentIn(vertex_t v)
 {
     vVertex_t ret;
+    int vi = index(v);
     for (auto t : vVertex)
     {
-        for (auto a : t->adjacent())
+        for (auto ei : t->outEdges())
         {
-            if (a == v)
-                ret.push_back(a);
+            if (vEdgeDst[ei] == vi)
+                ret.push_back(t);
         }
     }
     return ret;

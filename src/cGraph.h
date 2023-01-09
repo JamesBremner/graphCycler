@@ -11,23 +11,18 @@ class cVertex
     int myID;                   // node ID
     static int myLastID;        // ID assigned to most recently constructed node
     std::string myUserName;     // name assigned to vertex by user ( input specification )
-    std::vector<std::shared_ptr<cVertex>> vLinks; // vertices that this vertex links to
+    std::vector<int> vOutEdges; // edge indices that start at this vertex
 
 public:
     cVertex() {} // default constructor
     cVertex(const std::string &name);
 
-    /// @brief Add directed edge from this node to node in next layer
-    /// @param dst pointer to node in next layer
+    /// @brief Add directed edge from this vertex
+    /// @param dst pointer to destination vertex
 
-    void addEdge(std::shared_ptr<cVertex> dst);
-
-    /// @brief get adjacent nodes
-    /// @return
-    std::vector<std::shared_ptr<cVertex>> &
-    adjacent()
+    void addEdge(int edgeIndex )
     {
-        return vLinks;
+        vOutEdges.push_back( edgeIndex );
     }
 
     int ID() const
@@ -38,6 +33,11 @@ public:
     std::string userName() const
     {
         return myUserName;
+    }
+
+    std::vector<int> outEdges()
+    {
+        return vOutEdges;
     }
 };
 
@@ -54,6 +54,12 @@ public:
     */
 
     void setEdges(const std::string &sEdges);
+
+    /// @brief populate graph with edges the have attributes
+    /// @param sEdges string specifying the edges
+    /// @param countAttributes number of edge attributes for each edge
+
+    void setEdges(const std::string &sEdges, int countAttributes);
 
     /// @brief Human readable description
     /// @return
@@ -113,13 +119,21 @@ public:
     int ID(const std::string &name);
 
 private:
-    vVertex_t vVertex;
+    vVertex_t vVertex;          // graph vertices
+    std::vector<int> vEdgeDst;  // vertex indices of edge destinations
+    std::vector<std::vector<std::string>> vEdgeAttr; // edge attributes
+
+    void addEdge(vertex_t src, vertex_t dst);
 
     vertex_t findorAdd(const std::string &sn);
     int index(const std::string &sn);
     int index(vertex_t v);
 
+    /// @brief vertices that are reachable in one hop
+    /// @param v start vertex
+    /// @return vector of vertices
     vVertex_t adjacentOut(vertex_t v);
+
     vVertex_t adjacentIn(vertex_t v);
     vVertex_t adjacentAll(vertex_t v);
 };

@@ -18,6 +18,7 @@ TEST(breadth_first_search)
             visited.push_back(v->userName());
         });
 
+    CHECK_EQUAL( visited.size(), expected.size() );
     for (int k = 0; k < expected.size(); k++)
         CHECK_EQUAL(visited[k], expected[k]);
 }
