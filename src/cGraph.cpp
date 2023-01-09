@@ -41,12 +41,12 @@ void cGraph::setEdges(
         sattr = "";
         std::vector<std::string> vattr;
         std::string sattr_one;
-        for( int k = 0; k < countAttributes; k++ )
+        for (int k = 0; k < countAttributes; k++)
         {
             iss >> sattr_one;
             vattr.push_back(sattr_one);
         }
-        vEdgeAttr.push_back( vattr );
+        vEdgeAttr.push_back(vattr);
         addEdge(findorAdd(n1), findorAdd(n2));
     }
 }
@@ -54,6 +54,14 @@ void cGraph::addEdge(vertex_t src, vertex_t dst)
 {
     vEdgeDst.push_back(index(dst));
     src->addEdge(vEdgeDst.size() - 1);
+}
+void cGraph::addEdge(
+    const std::string &src,
+    const std::string &dst)
+{
+    addEdge(
+        findorAdd(src),
+        findorAdd(dst));
 }
 
 vertex_t cGraph::findorAdd(const std::string &sn)
@@ -350,4 +358,64 @@ cGraph::dfs_cycle_finder(const std::string &start)
         }
     }
     return ret;
+}
+
+cGraph cGraph::spanningTree(const std::string &start)
+{
+    cGraph spanTree;
+
+    // track visited vertices
+    std::vector<bool> visited(vVertex.size(), false);
+
+    // add initial arbitrary link
+    vertex_t v = vVertex[index(start)];
+    auto va = adjacentOut(v);
+    if (!va.size())
+        throw std::runtime_error(
+            "spanning tree start vertex unconnected");
+    auto w = va[0];
+    spanTree.addEdge(v->userName(), w->userName());
+    visited[index(v)] = true;
+    visited[index(w)] = true;
+
+    // while nodes remain outside of span
+    while ( vVertex.size() > spanTree.vertexCount() )
+    {
+        double min_cost = INT_MAX;
+        std::pair<vertex_t, vertex_t> bestLink;
+
+        // loop over nodes in span
+        for (int kv = 0; kv < vVertex.size(); kv++)
+        {
+            if (!visited[kv])
+                continue;
+            v = vVertex[kv];
+
+            // loop over adjacent nodes not in span
+            for (auto w : adjacentOut(v))
+            {
+                if (visited[index(w)])
+                    continue;
+
+                double cost = edgeAttrDouble(v, w, 0);
+                if (cost > 0)
+                {
+                    if (cost < min_cost)
+                    {
+                        min_cost = cost;
+                        bestLink = std::make_pair(v, w);
+                    }
+                }
+            }
+        }
+
+        // add cheapest link between node in tree to node not yet in tree
+        spanTree.addEdge(
+            bestLink.first->userName(),
+            bestLink.second->userName());
+        visited[index(bestLink.first)] = true;
+        visited[index(bestLink.second)] = true;
+    }
+
+    return spanTree;
 }

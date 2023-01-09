@@ -18,7 +18,7 @@ TEST(breadth_first_search)
             visited.push_back(v->userName());
         });
 
-    CHECK_EQUAL( visited.size(), expected.size() );
+    CHECK_EQUAL(visited.size(), expected.size());
     for (int k = 0; k < expected.size(); k++)
         CHECK_EQUAL(visited[k], expected[k]);
 }
@@ -78,7 +78,7 @@ TEST(cycle_finder)
     vCycle = graph.dfs_cycle_finder("a");
     CHECK_EQUAL(vCycle.size(), 0);
 
-    // two cycles 
+    // two cycles
     graph.setEdges("a b\nb c\nc d\nd a\nc a");
     vCycle = graph.dfs_cycle_finder("a");
     CHECK_EQUAL(vCycle.size(), 2);
@@ -87,6 +87,22 @@ TEST(cycle_finder)
         CHECK_EQUAL(vCycle[0][k]->userName(), expected0[k]);
     for (int k = 0; k < expected1.size(); k++)
         CHECK_EQUAL(vCycle[1][k]->userName(), expected1[k]);
+}
+
+TEST(SpanningTree)
+{
+    cGraph graph;
+    graph.setEdges(
+        "a b "
+        "b c "
+        "c d "
+        "a x "
+        "x y "
+        "y d ");
+
+    auto span = graph.spanningTree("a");
+
+    CHECK_EQUAL(6, span.vertexCount());
 }
 
 main()

@@ -100,13 +100,18 @@ public:
         vertex_t start,
         vertex_t finish );
 
-
     /// @brief Dijsktra path from start to every node
     /// @param[in] start node
     /// @return vertex index vector of vertice that precedes each vertex
 
     std::vector<int> dijsktra(
         vertex_t start );
+
+    /// @brief Create a spanning tree
+    /// @param start starting vertex name
+    /// @return the spanning tree ( cGraph )
+
+    cGraph spanningTree(const std::string & start);
 
     /// @brief Depth first search, finding cycles in directed graph
     /// @param start name of start vertex
@@ -116,6 +121,9 @@ public:
     dfs_cycle_finder(
         const std::string &start);
 
+    int vertexCount() const{
+        return vVertex.size();
+    }
     int ID(const std::string &name);
 
 private:
@@ -124,6 +132,7 @@ private:
     std::vector<std::vector<std::string>> vEdgeAttr; // edge attributes
 
     void addEdge(vertex_t src, vertex_t dst);
+    void addEdge(const std::string & src, const std::string & dst);
 
     vertex_t findorAdd(const std::string &sn);
     int index(const std::string &sn);
@@ -136,4 +145,12 @@ private:
 
     vVertex_t adjacentIn(vertex_t v);
     vVertex_t adjacentAll(vertex_t v);
+
+    double edgeAttrDouble( 
+        vertex_t src,
+        vertex_t dst,
+        int attrIndex ) const
+    {
+        return 1.0;
+    }
 };
