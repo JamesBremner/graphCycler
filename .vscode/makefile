@@ -1,13 +1,18 @@
 #source file search paths
-VPATH = ./src ../raven-set
+VPATH = ./src ../raven-set ../autocell/src
 
 	# compiler include search paths
 INCS = -I./include \
-	-I../ravencode/pub/src \
+	-I../windex/include \
 	-I../raven-set \
+	-I../autocell/src \
+	-I../../code_ext/boost/boost1_78 
 
 LIBS = \
-	-lgdiplus -lgdi32 -lcomdlg32 -lstdc++fs \
+	-lgdiplus -lgdi32 -lcomdlg32 -lComctl32 \
+		-L../../code_ext/boost/boost1_78/lib \
+		-lboost_system-mgw11-mt-x64-1_78 \
+		-lboost_program_options-mgw11-mt-x64-1_78 \
 	#-mwindows
 
 static_link_flags = -static-libstdc++ -static-libgcc -static
@@ -22,6 +27,15 @@ CCflags = -std=c++17 $(OPT) -D_mingw_
 OBJ_starter = \
 	$(ODIR)/main.o \
 	$(ODIR)/cGraph.o
+
+OBJ_obstacle = \
+	$(ODIR)/mainObstacle.o \
+	$(ODIR)/cObstacle.o \
+	$(ODIR)/cObstacleGUI.o \
+	$(ODIR)/cGraph.o \
+	$(ODIR)/autocell.o \
+	$(ODIR)/cxy.o \
+	$(ODIR)/cRunWatch.o
 
 OBJ_test = \
 	$(ODIR)/test.o \
@@ -44,11 +58,18 @@ test: $(OBJ_test)
 	-o bin/test.exe $^  \
 	$(static_link_flags) $(LIBS)
 
+obstacle: $(OBJ_obstacle)
+	g++ -o bin/obstacle.exe \
+	$^ $(OPT) \
+	$(static_link_flags) $(LIBS)
+
+
+
 .PHONY: clean
 clean:
 	del /q .vscode\\obj\\*.o
 
-build: starter test
+build: starter test onstacle
 
-rebuild: clean starter test
+rebuild: clean starter test obstacle
 

@@ -20,9 +20,9 @@ public:
     /// @brief Add directed edge from this vertex
     /// @param dst pointer to destination vertex
 
-    void addEdge(int edgeIndex )
+    void addEdge(int edgeIndex)
     {
-        vOutEdges.push_back( edgeIndex );
+        vOutEdges.push_back(edgeIndex);
     }
 
     int ID() const
@@ -55,6 +55,8 @@ public:
 
     void setEdges(const std::string &sEdges);
 
+    void addEdge(const std::string &src, const std::string &dst);
+
     /// @brief populate graph with edges the have attributes
     /// @param sEdges string specifying the edges
     /// @param countAttributes number of edge attributes for each edge
@@ -67,20 +69,20 @@ public:
     std::string text();
 
     /// @brief breadth first search
-    /// @param start 
+    /// @param start
     /// @param visitor function called when a new node is reached
 
     void bfs(
-        const std::string & start,
-        std::function<void(vertex_t)> visitor );
+        const std::string &start,
+        std::function<void(vertex_t)> visitor);
 
     /// @brief depth first search
-    /// @param start 
+    /// @param start
     /// @param visitor function called when a new node is reached
 
     void dfs(
-        const std::string & start,
-        std::function<void(vertex_t)> visitor );
+        const std::string &start,
+        std::function<void(vertex_t)> visitor);
 
     /// @brief Shortest path between vertices using dijsktra algorithm
     /// @param start name of start vertex
@@ -88,8 +90,8 @@ public:
     /// @return vector of vertices on path
 
     vVertex_t path(
-        const std::string & start,
-        const std::string & finish );
+        const std::string &start,
+        const std::string &finish);
 
     /// @brief Shortest path between vertices using dijsktra algorithm
     /// @param start start vertex
@@ -98,41 +100,44 @@ public:
 
     vVertex_t path(
         vertex_t start,
-        vertex_t finish );
+        vertex_t finish);
 
     /// @brief Dijsktra path from start to every node
     /// @param[in] start node
     /// @return vertex index vector of vertice that precedes each vertex
 
     std::vector<int> dijsktra(
-        vertex_t start );
+        vertex_t start);
 
     /// @brief Create a spanning tree
     /// @param start starting vertex name
     /// @return the spanning tree ( cGraph )
 
-    cGraph spanningTree(const std::string & start);
+    cGraph spanningTree(const std::string &start);
 
     /// @brief Depth first search, finding cycles in directed graph
     /// @param start name of start vertex
     /// @return vector of vectors, each with the vertices in a cycle
 
-    std::vector< std::vector< vertex_t> >
+    std::vector<std::vector<vertex_t>>
     dfs_cycle_finder(
         const std::string &start);
 
-    int vertexCount() const{
+    int vertexCount() const
+    {
         return vVertex.size();
     }
     int ID(const std::string &name);
 
+    std::vector< std::pair<std::string,std::string>>
+    getlinkedVerticesNames();
+
 private:
-    vVertex_t vVertex;          // graph vertices
-    std::vector<int> vEdgeDst;  // vertex indices of edge destinations
+    vVertex_t vVertex;                               // graph vertices
+    std::vector<int> vEdgeDst;                       // vertex indices of edge destinations
     std::vector<std::vector<std::string>> vEdgeAttr; // edge attributes
 
     void addEdge(vertex_t src, vertex_t dst);
-    void addEdge(const std::string & src, const std::string & dst);
 
     vertex_t findorAdd(const std::string &sn);
     int index(const std::string &sn);
@@ -146,10 +151,10 @@ private:
     vVertex_t adjacentIn(vertex_t v);
     vVertex_t adjacentAll(vertex_t v);
 
-    double edgeAttrDouble( 
+    double edgeAttrDouble(
         vertex_t src,
         vertex_t dst,
-        int attrIndex ) const
+        int attrIndex) const
     {
         return 1.0;
     }

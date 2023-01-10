@@ -4,9 +4,9 @@ public:
     /** CTOR
      * @param[in] title will appear in application window title
      * @param[in] vlocation set location and size of appplication window
-     * 
+     *
      * Usage:
-     * 
+     *
      * <pre>
 class appGUI : public cStarterGUI
 {
@@ -41,13 +41,12 @@ public:
             });
     }
     /** Draw nothing
-     * 
+     *
      * An application should over-ride this method
      * to perform any drawing reuired
      */
-    virtual void draw( wex::shapes& S )
+    virtual void draw(wex::shapes &S)
     {
-
     }
     void show()
     {
@@ -60,4 +59,30 @@ public:
 
 protected:
     wex::gui &fm;
+};
+
+class cGUI : public cStarterGUI
+{
+public:
+    cGUI();
+
+private:
+    cObstacle myObstacle;
+    enum class eView
+    {
+        route,
+        span,
+        input,
+    };
+    eView myViewType;
+    std::string myfname;
+
+    void ConstructMenu();
+
+    void draw(PAINTSTRUCT &ps);
+
+    void drawInput(wex::shapes& S);
+    void drawObstacles(
+        wex::shapes& S,
+        int scale );
 };
