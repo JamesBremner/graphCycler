@@ -2,6 +2,33 @@
 #include "cutest.h"
 #include "cGraph.h"
 
+TEST(setEdges)
+{
+    cGraph graph;
+
+    graph.setEdges(
+        "a b 1 "
+        "a x 2 "
+        "b x 3 ",
+        1);
+
+    auto edges = graph.getlinkedVerticesNames();
+
+    std::vector<std::pair<std::string, std::string>> expected{
+        {"b","x"},
+        {"a", "b"},
+        {"a", "x"}  };
+    CHECK_EQUAL(expected.size(), edges.size());
+    for (int k = 0; k < expected.size(); k++) {
+        CHECK_EQUAL(expected[k].first, edges[k].first);
+        CHECK_EQUAL(expected[k].second, edges[k].second);
+    }
+    CHECK_EQUAL( graph.edgeAttrDouble( "a", "b", 0 ), 1.0 );
+    CHECK_EQUAL( graph.edgeAttrDouble( "a", "x", 0 ), 2.0 );
+    CHECK_EQUAL( graph.edgeAttrDouble( "b", "x", 0 ), 3.0 );
+
+}
+
 TEST(breadth_first_search)
 {
     // construct test graph
@@ -103,6 +130,64 @@ TEST(SpanningTree)
     auto span = graph.spanningTree("a");
 
     CHECK_EQUAL(6, span.vertexCount());
+
+    auto edges = graph.getlinkedVerticesNames();
+    std::vector<std::pair<std::string, std::string>> expected{
+        {"b", "c"},
+        {"a", "b"},
+        {"a", "x"}};
+    for (int k = 0; k < expected.size(); k++)
+    {
+        CHECK_EQUAL(expected[k].first, edges[k].first);
+        CHECK_EQUAL(expected[k].second, edges[k].second);
+    }
+ }
+
+TEST(SpanningTreeCost)
+{
+    cGraph graph;
+
+    graph.setEdges(
+        "a b 1 "
+        "a x 1 "
+        "b x 10 ",
+        1);
+
+    auto span = graph.spanningTree("a");
+
+    CHECK_EQUAL(3, span.vertexCount());
+
+    auto edges = span.getlinkedVerticesNames();
+    std::vector<std::pair<std::string, std::string>> expected{
+        {"a", "b"},
+        {"a", "x"},
+    };
+    for (int k = 0; k < expected.size(); k++)
+    {
+        CHECK_EQUAL(expected[k].first, edges[k].first);
+        CHECK_EQUAL(expected[k].second, edges[k].second);
+    }
+
+    // increase cost of b-c edge
+    graph.setEdges(
+        "a b 1 "
+        "a x 10 "
+        "b x 1 ",
+        1);
+    span = graph.spanningTree("a");
+
+    CHECK_EQUAL(3, span.vertexCount());
+
+    edges = span.getlinkedVerticesNames();
+    std::vector<std::pair<std::string, std::string>> expected2{
+        {"a", "b"},
+        {"b", "x"},
+    };
+    for (int k = 0; k < expected2.size(); k++)
+    {
+        CHECK_EQUAL(expected2[k].first, edges[k].first);
+        CHECK_EQUAL(expected2[k].second, edges[k].second);
+    }
 }
 
 main()

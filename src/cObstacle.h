@@ -1,4 +1,5 @@
 #include "autocell.h"
+#include "cGraph.h"
 
 /// @brief 2D grid cell that can contain obstacles
 
@@ -41,13 +42,14 @@ class cObstacle
 
     cell::cAutomaton<cOCell> *A; ///< 2D grid
     std::vector<cOCell *> vN;    ///< nodes to be included in path
-    vlink_t vL;                  ///< links between nodes
+    //vlink_t vL;                  ///< links between nodes
     vlink_t vPath;
     std::vector<cOCell *> myNodesRevisited;
     int myBestCountRevisited;
-    vlink_t mySpanningTree;
     bool myfrect;               /// true if grid is rectangular
     std::vector< cxy > myPolygon;   /// polygon vertices for non-rectangular grid
+    cGraph myGraph;
+    cGraph mySpanningTree;
 
 public:
 
@@ -122,10 +124,10 @@ public:
 
     /// @brief get links
     /// @return
-    vlink_t links()
-    {
-        return vL;
-    }
+    // vlink_t links()
+    // {
+    //     return vL;
+    // }
 
     /// @brief get grid
     /// @return
@@ -153,10 +155,7 @@ public:
         return myNodesRevisited;
     }
 
-    vlink_t spanningTree_get()
-    {
-        return mySpanningTree;
-    }
+     vlink_t spanningTree_get();
 
     /// @brief Find practical tour visiting all required nodes
     void tourSpanningTree();
@@ -220,7 +219,7 @@ private:
 
     /// @brief Find tree that connects all required nodes
     /// @param start index to root node, defaults to 0
-    void spanningTree( int start = 0 );
+    //void spanningTree( int start = 0 );
 };
 
     /// @brief read layout of obstacles from file

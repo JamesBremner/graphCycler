@@ -13,6 +13,13 @@ cVertex::cVertex(const std::string &name)
     myID = ++myLastID;
 }
 
+void cGraph::clear()
+{
+    vVertex.clear();
+    vEdgeDst.clear();
+    vEdgeAttr.clear();
+}
+
 void cGraph::setEdges(const std::string &sEdges)
 {
     std::istringstream iss(sEdges);
@@ -35,9 +42,9 @@ void cGraph::setEdges(
     vEdgeAttr.clear();
     vEdgeDst.clear();
 
+    iss >> n1 >> n2;
     while (iss.good())
     {
-        iss >> n1 >> n2;
         sattr = "";
         std::vector<std::string> vattr;
         std::string sattr_one;
@@ -48,6 +55,8 @@ void cGraph::setEdges(
         }
         vEdgeAttr.push_back(vattr);
         addEdge(findorAdd(n1), findorAdd(n2));
+
+        iss >> n1 >> n2;
     }
 }
 void cGraph::addEdge(vertex_t src, vertex_t dst)
@@ -59,9 +68,9 @@ void cGraph::addEdge(
     const std::string &src,
     const std::string &dst)
 {
-    addEdge(
-        findorAdd(src),
-        findorAdd(dst));
+    vertex_t sv = findorAdd(src);
+    vertex_t dv = findorAdd(dst);
+    addEdge( sv, dv );
 }
 
 vertex_t cGraph::findorAdd(const std::string &sn)
@@ -98,6 +107,23 @@ int cGraph::ID(const std::string &name)
         if (v->userName() == name)
             return v->ID();
     return -1;
+}
+
+std::vector<std::pair<std::string, std::string>>
+cGraph::getlinkedVerticesNames()
+{
+    std::vector<std::pair<std::string, std::string>> ret;
+
+    for (vertex_t v : vVertex)
+    {
+        for (vertex_t w : adjacentOut(v))
+        {
+            ret.push_back(std::make_pair(
+                v->userName(),
+                w->userName()));
+        }
+    }
+    return ret;
 }
 
 void cGraph::bfs(
@@ -297,7 +323,49 @@ vVertex_t cGraph::adjacentAll(vertex_t v)
     return ret;
 }
 
-int cGraph::index(const std::string &sn)
+int cGraph::edgeIndex(
+    vertex_t src,
+    vertex_t dst) const
+{
+    int dsti = index(dst);
+    for (vertex_t v : vVertex)
+    {
+        if (v != src)
+            continue;
+        for (int i : v->outEdges())
+        {
+            if (vEdgeDst[i] == dsti)
+                return i;
+        }
+    }
+    return -1;
+}
+
+double cGraph::edgeAttrDouble(
+    vertex_t src,
+    vertex_t dst,
+    int attrIndex) 
+{
+    int eindex = edgeIndex(src, dst);
+    if (0 > eindex || eindex >= vEdgeAttr.size())
+        return 1.0;
+    if (0 > attrIndex || attrIndex >= vEdgeAttr.size())
+        return 1.0;
+    return atof(vEdgeAttr[eindex][attrIndex].c_str());
+}
+
+    double  cGraph::edgeAttrDouble(
+        const std::string & src,
+        const std::string & dst,
+        int attrIndex) 
+        {
+            return edgeAttrDouble(
+                findorAdd(src),
+                findorAdd(dst),
+                attrIndex );
+        }
+
+int cGraph::index(const std::string &sn) const
 {
     int ret = 0;
     for (auto &n : vVertex)
@@ -308,7 +376,7 @@ int cGraph::index(const std::string &sn)
     }
     return -1;
 }
-int cGraph::index(vertex_t v)
+int cGraph::index(vertex_t v) const
 {
     return index(v->userName());
 }
@@ -379,7 +447,7 @@ cGraph cGraph::spanningTree(const std::string &start)
     visited[index(w)] = true;
 
     // while nodes remain outside of span
-    while ( vVertex.size() > spanTree.vertexCount() )
+    while (vVertex.size() > spanTree.vertexCount())
     {
         double min_cost = INT_MAX;
         std::pair<vertex_t, vertex_t> bestLink;

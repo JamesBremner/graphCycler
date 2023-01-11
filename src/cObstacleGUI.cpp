@@ -40,10 +40,10 @@ void cGUI::ConstructMenu()
                          read(myObstacle, myfname);
                          raven::set::cRunWatch::Start();
                          {
-                            raven::set::cRunWatch aWatcher("plan");
-                         myObstacle.unobstructedPoints();
-                         myObstacle.connect();
-                         myObstacle.tourSpanningTree();
+                             raven::set::cRunWatch aWatcher("plan");
+                             myObstacle.unobstructedPoints();
+                             myObstacle.connect();
+                             myObstacle.tourSpanningTree();
                          }
                          raven::set::cRunWatch::Report();
                          fm.update();
@@ -94,9 +94,8 @@ void cGUI::draw(PAINTSTRUCT &ps)
 
     int scaleh = 1000 / H;
     int scale = 1800 / W;
-    if( scaleh < scale )
+    if (scaleh < scale)
         scale = scaleh;
-
 
     auto grid = myObstacle.grid();
     S.color(0x000000);
@@ -126,27 +125,27 @@ void cGUI::draw(PAINTSTRUCT &ps)
 
         S.color(0xFF0000);
         S.penThick(1);
-        sspath << std::get<0>(myObstacle.path()[0])->ID();
-        for (auto &pl : myObstacle.path())
-        {
-            auto n1 = std::get<0>(pl);
-            auto n2 = std::get<1>(pl);
-            int w, h, w2, h2;
-            grid->coords(
-                w, h, n1);
-            grid->coords(
-                w2, h2, n2);
-            S.line({scale * w, scale * h, scale * w2, scale * h2});
+        // sspath << std::get<0>(myObstacle.path()[0])->ID();
+        // for (auto &pl : myObstacle.path())
+        // {
+        //     auto n1 = std::get<0>(pl);
+        //     auto n2 = std::get<1>(pl);
+        //     int w, h, w2, h2;
+        //     grid->coords(
+        //         w, h, n1);
+        //     grid->coords(
+        //         w2, h2, n2);
+        //     S.line({scale * w, scale * h, scale * w2, scale * h2});
 
-            sspath << " -> " << n2->ID();
-            pathCount++;
-            if (pathCount > 15)
-            {
-                sspath << "\r\n";
-                pathCount = 0;
-            }
-        }
-        //S.text(sspath.str(), {scale, H * scale, 1000, 1000});
+        //     sspath << " -> " << n2->ID();
+        //     pathCount++;
+        //     if (pathCount > 15)
+        //     {
+        //         sspath << "\r\n";
+        //         pathCount = 0;
+        //     }
+        // }
+        // S.text(sspath.str(), {scale, H * scale, 1000, 1000});
         std::cout << sspath.str() << "\n";
 
         // S.text(

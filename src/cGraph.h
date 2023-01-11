@@ -47,6 +47,9 @@ typedef std::vector<vertex_t> vVertex_t;
 class cGraph
 {
 public:
+
+    void clear();
+
     /** @brief populate the graph with edges
        @param sEdges string specifying the edges
 
@@ -57,7 +60,7 @@ public:
 
     void addEdge(const std::string &src, const std::string &dst);
 
-    /// @brief populate graph with edges the have attributes
+    /// @brief populate graph with edges that have attributes
     /// @param sEdges string specifying the edges
     /// @param countAttributes number of edge attributes for each edge
 
@@ -123,6 +126,8 @@ public:
     dfs_cycle_finder(
         const std::string &start);
 
+    //////////  GETTERS ////////////////////////////////
+
     int vertexCount() const
     {
         return vVertex.size();
@@ -132,6 +137,15 @@ public:
     std::vector< std::pair<std::string,std::string>>
     getlinkedVerticesNames();
 
+    double edgeAttrDouble(
+        vertex_t src,
+        vertex_t dst,
+        int attrIndex) ;
+    double edgeAttrDouble(
+        const std::string & src,
+        const std::string & dst,
+        int attrIndex) ;
+
 private:
     vVertex_t vVertex;                               // graph vertices
     std::vector<int> vEdgeDst;                       // vertex indices of edge destinations
@@ -140,8 +154,8 @@ private:
     void addEdge(vertex_t src, vertex_t dst);
 
     vertex_t findorAdd(const std::string &sn);
-    int index(const std::string &sn);
-    int index(vertex_t v);
+    int index(const std::string &sn) const;
+    int index(vertex_t v) const;
 
     /// @brief vertices that are reachable in one hop
     /// @param v start vertex
@@ -151,11 +165,10 @@ private:
     vVertex_t adjacentIn(vertex_t v);
     vVertex_t adjacentAll(vertex_t v);
 
-    double edgeAttrDouble(
-        vertex_t src,
-        vertex_t dst,
-        int attrIndex) const
-    {
-        return 1.0;
-    }
+
+
+    int edgeIndex(
+    vertex_t src,
+    vertex_t dst) const;
+
 };

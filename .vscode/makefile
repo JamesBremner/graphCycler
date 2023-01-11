@@ -69,7 +69,7 @@ obstacle: $(OBJ_obstacle)
 clean:
 	del /q .vscode\\obj\\*.o
 
-build: starter test onstacle
+build: starter test obstacle
 
 rebuild: clean starter test obstacle
 
