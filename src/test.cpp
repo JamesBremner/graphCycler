@@ -2,6 +2,22 @@
 #include "cutest.h"
 #include "cGraph.h"
 
+TEST(adjacent)
+{
+    cGraph graph;
+    graph.setEdges(
+        "a b "
+        "a x ");
+
+    auto v = graph.findorAdd("a");
+    CHECK_EQUAL(0,graph.adjacentIn(v).size());
+    CHECK_EQUAL(2,graph.adjacentOut(v).size());
+    CHECK_EQUAL(2,graph.adjacentAll(v).size());
+
+    auto vls = graph.leaves();
+    CHECK_EQUAL(2, vls.size());
+}
+
 TEST(setEdges)
 {
     cGraph graph;
@@ -15,25 +31,31 @@ TEST(setEdges)
     auto edges = graph.getlinkedVerticesNames();
 
     std::vector<std::pair<std::string, std::string>> expected{
-        {"b","x"},
+        {"b", "x"},
         {"a", "b"},
-        {"a", "x"}  };
+        {"a", "x"}};
     CHECK_EQUAL(expected.size(), edges.size());
-    for (int k = 0; k < expected.size(); k++) {
+    for (int k = 0; k < expected.size(); k++)
+    {
         CHECK_EQUAL(expected[k].first, edges[k].first);
         CHECK_EQUAL(expected[k].second, edges[k].second);
     }
-    CHECK_EQUAL( graph.edgeAttrDouble( "a", "b", 0 ), 1.0 );
-    CHECK_EQUAL( graph.edgeAttrDouble( "a", "x", 0 ), 2.0 );
-    CHECK_EQUAL( graph.edgeAttrDouble( "b", "x", 0 ), 3.0 );
-
+    CHECK_EQUAL(graph.edgeAttrDouble("a", "b", 0), 1.0);
+    CHECK_EQUAL(graph.edgeAttrDouble("a", "x", 0), 2.0);
+    CHECK_EQUAL(graph.edgeAttrDouble("b", "x", 0), 3.0);
 }
 
 TEST(breadth_first_search)
 {
     // construct test graph
     cGraph graph;
-    graph.setEdges("a b\nb c\nc d\nd a\na x\nx y");
+    graph.setEdges(
+        "a b "
+        "b c "
+        "c d "
+        "d a "
+        "a x "
+        "x y ");
 
     std::vector<std::string> expected{"a", "b", "x", "c", "y", "d"};
     std::vector<std::string> visited;
@@ -45,7 +67,7 @@ TEST(breadth_first_search)
             visited.push_back(v->userName());
         });
 
-    CHECK_EQUAL(visited.size(), expected.size());
+    CHECK_EQUAL(expected.size(),visited.size());
     for (int k = 0; k < expected.size(); k++)
         CHECK_EQUAL(visited[k], expected[k]);
 }
@@ -53,7 +75,13 @@ TEST(depth_first_search)
 {
     // construct test graph
     cGraph graph;
-    graph.setEdges("a b\nb c\nc d\nd a\na x\nx y");
+    graph.setEdges(
+        "a b "
+        "b c "
+        "c d "
+        "d a "
+        "a x "
+        "x y ");
 
     std::vector<std::string> expected{"a", "x", "y", "b", "c", "d"};
     std::vector<std::string> visited;
@@ -72,7 +100,13 @@ TEST(dijsktra)
 {
     // construct test graph
     cGraph graph;
-    graph.setEdges("a b\nb c\nc d\nd a\na x\nx y");
+    graph.setEdges(
+        "a b "
+        "b c "
+        "c d "
+        "d a "
+        "a x "
+        "x y ");
 
     std::vector<std::string> expected1{"a", "x", "y"};
     std::vector<std::string> visited;
@@ -93,7 +127,7 @@ TEST(cycle_finder)
     cGraph graph;
 
     // one cycle
-    graph.setEdges("a b\nb c\nc d\nd a");
+    graph.setEdges("a b \nb c \nc d \nd a ");
     std::vector<std::string> expected1{"a", "b", "c", "d", "a"};
     auto vCycle = graph.dfs_cycle_finder("a");
     CHECK_EQUAL(vCycle.size(), 1);
@@ -101,12 +135,12 @@ TEST(cycle_finder)
         CHECK_EQUAL(vCycle[0][k]->userName(), expected1[k]);
 
     // no cycle ( directed )
-    graph.setEdges("a b\nb c\nc d\na x\nx y\ny d");
+    graph.setEdges("a b \nb c \nc d \na x \nx y \ny d ");
     vCycle = graph.dfs_cycle_finder("a");
     CHECK_EQUAL(vCycle.size(), 0);
 
     // two cycles
-    graph.setEdges("a b\nb c\nc d\nd a\nc a");
+    graph.setEdges("a b \nb c \nc d \nd a \nc a ");
     vCycle = graph.dfs_cycle_finder("a");
     CHECK_EQUAL(vCycle.size(), 2);
     std::vector<std::string> expected0{"a", "b", "c", "a"};
@@ -141,7 +175,7 @@ TEST(SpanningTree)
         CHECK_EQUAL(expected[k].first, edges[k].first);
         CHECK_EQUAL(expected[k].second, edges[k].second);
     }
- }
+}
 
 TEST(SpanningTreeCost)
 {
@@ -189,6 +223,7 @@ TEST(SpanningTreeCost)
         CHECK_EQUAL(expected2[k].second, edges[k].second);
     }
 }
+
 
 main()
 {

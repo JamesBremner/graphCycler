@@ -48,6 +48,8 @@ class cGraph
 {
 public:
 
+//////////  SETTERS ////////////////////////////////
+
     void clear();
 
     /** @brief populate the graph with edges
@@ -65,15 +67,18 @@ public:
     /// @param countAttributes number of edge attributes for each edge
 
     void setEdges(const std::string &sEdges, int countAttributes);
-
-    /// @brief Human readable description
-    /// @return
-
-    std::string text();
+    
+    /// @brief find vertex by name, add to graph if not found
+    /// @param sn vertex name
+    /// @return shared pointer to vertex found or added
+    
+    vertex_t findorAdd(const std::string &sn);
 
     /// @brief breadth first search
     /// @param start
     /// @param visitor function called when a new node is reached
+
+//////////  GRAPH THEORY ALGORITHMS ////////////////////////////////
 
     void bfs(
         const std::string &start,
@@ -146,18 +151,7 @@ public:
         const std::string & dst,
         int attrIndex) ;
 
-private:
-    vVertex_t vVertex;                               // graph vertices
-    std::vector<int> vEdgeDst;                       // vertex indices of edge destinations
-    std::vector<std::vector<std::string>> vEdgeAttr; // edge attributes
-
-    void addEdge(vertex_t src, vertex_t dst);
-
-    vertex_t findorAdd(const std::string &sn);
-    int index(const std::string &sn) const;
-    int index(vertex_t v) const;
-
-    /// @brief vertices that are reachable in one hop
+            /// @brief vertices that are reachable in one hop
     /// @param v start vertex
     /// @return vector of vertices
     vVertex_t adjacentOut(vertex_t v);
@@ -165,7 +159,24 @@ private:
     vVertex_t adjacentIn(vertex_t v);
     vVertex_t adjacentAll(vertex_t v);
 
+    /// @brief get leaf vertices
+    /// @return vertices that have exactly one edge, in or out
+    vVertex_t leaves();
 
+    /// @brief Human readable description
+    /// @return string
+
+    std::string text();
+
+private:
+    vVertex_t vVertex;                               // graph vertices
+    std::vector<int> vEdgeDst;                       // vertex indices of edge destinations
+    std::vector<std::vector<std::string>> vEdgeAttr; // edge attributes
+
+    void addEdge(vertex_t src, vertex_t dst);
+
+    int index(const std::string &sn) const;
+    int index(vertex_t v) const;
 
     int edgeIndex(
     vertex_t src,

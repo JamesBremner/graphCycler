@@ -25,10 +25,11 @@ void cGraph::setEdges(const std::string &sEdges)
     std::istringstream iss(sEdges);
     std::string n1, n2;
     vVertex.clear();
+    iss >> n1 >> n2;
     while (iss.good())
     {
-        iss >> n1 >> n2;
         addEdge(findorAdd(n1), findorAdd(n2));
+        iss >> n1 >> n2;
     }
 }
 void cGraph::setEdges(
@@ -364,6 +365,17 @@ double cGraph::edgeAttrDouble(
                 findorAdd(dst),
                 attrIndex );
         }
+
+vVertex_t cGraph::leaves() 
+{
+    vVertex_t ret;
+    for( vertex_t v : vVertex )
+    {
+        if( adjacentAll( v ).size() == 1 )
+            ret.push_back( v );
+    }
+    return ret;
+}
 
 int cGraph::index(const std::string &sn) const
 {

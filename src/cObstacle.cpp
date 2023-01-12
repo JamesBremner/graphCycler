@@ -280,19 +280,13 @@ void cObstacle::tourSpanningTree()
         mySpanningTree = myGraph.spanningTree(std::to_string(vN[spanstart]->ID()));
 
         // // connect spanning tree leaves
-        // auto connectedLeaves = mySpanningTree;
-        // std::vector<cOCell *> leaves;
-        // for (auto v : vN)
-        // {
-        //     int countSpanningTreeConnections = 0;
-        //     for (auto &l : mySpanningTree)
-        //     {
-        //         if (std::get<0>(l) == v || std::get<1>(l) == v)
-        //             countSpanningTreeConnections++;
-        //     }
-        //     if (countSpanningTreeConnections == 1)
-        //         leaves.push_back(v);
-        // }
+        auto connectedLeaves = mySpanningTree;
+        std::vector<cOCell *> leaves;
+        for (auto v : vN)
+        {
+            // if( mySpanningTree.adjacentOut(v).size() == 1 )
+            //     leaves.push_back(v);
+        }
         // for (int kv = 0; kv < leaves.size(); kv++)
         //     for (int kw = 0; kw < leaves.size(); kw++)
         //     {
