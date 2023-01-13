@@ -16,6 +16,19 @@ TEST(adjacent)
 
     auto vls = graph.leaves();
     CHECK_EQUAL(2, vls.size());
+
+    graph.setEdges(
+        "a b "
+        "b c "
+        "c d "
+        "d a "
+        "a x "
+        "x y ");
+    CHECK_EQUAL(1, graph.adjacentIn(graph.findorAdd("a")).size());
+    CHECK_EQUAL(1, graph.adjacentIn(graph.findorAdd("b")).size());
+    CHECK_EQUAL(1, graph.adjacentIn(graph.findorAdd("c")).size());
+    CHECK_EQUAL(1, graph.adjacentIn(graph.findorAdd("d")).size());
+    CHECK_EQUAL(1, graph.adjacentIn(graph.findorAdd("x")).size());
 }
 
 TEST(setEdges)
@@ -109,9 +122,9 @@ TEST(depth_first_search)
         {
             visited.push_back(v->userName());
         });
-    CHECK_EQUAL(3,visited.size());
+    CHECK_EQUAL(3, visited.size());
     for (int k = 0; k < expected2.size(); k++)
-        CHECK_EQUAL(expected2[k],visited[k]);
+        CHECK_EQUAL(expected2[k], visited[k]);
 }
 TEST(dijsktra)
 {

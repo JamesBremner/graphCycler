@@ -44,7 +44,7 @@
             }
         },
         {
-            "label": "test",
+            "label": "unittest",
             "options": { "cwd": "${workspaceFolder}" },
             "command": "mingw32-make.exe",
             "args": [ "-f", ".vscode/makefile", "test" ],

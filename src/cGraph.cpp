@@ -5,12 +5,9 @@
 
 #include "cGraph.h"
 
-int cVertex::myLastID = -1;
-
 cVertex::cVertex(const std::string &name)
     : myUserName(name)
 {
-    myID = ++myLastID;
 }
 
 void cGraph::clear()
@@ -18,10 +15,12 @@ void cGraph::clear()
     vVertex.clear();
     vEdgeDst.clear();
     vEdgeAttr.clear();
+    vOutEdges.clear();
 }
 
 void cGraph::setEdges(const std::string &sEdges)
 {
+    clear();
     std::istringstream iss(sEdges);
     std::string n1, n2;
     vVertex.clear();
@@ -42,6 +41,7 @@ void cGraph::setEdges(
     vVertex.clear();
     vEdgeAttr.clear();
     vEdgeDst.clear();
+    vOutEdges.clear();
 
     iss >> n1 >> n2;
     while (iss.good())
@@ -66,11 +66,12 @@ int cGraph::addEdge(
     const std::string &sattr)
 {
     vEdgeDst.push_back(index(dst));
-    int index = vEdgeDst.size() - 1;
+    int ei = vEdgeDst.size() - 1;
     if (!sattr.empty())
-        vEdgeAttr[index][0] = sattr; // assumes just one attribute
-    src->addEdge(index);
-    return index;
+        vEdgeAttr[ei][0] = sattr; // assumes just one attribute
+    int si = index(src);
+    vOutEdges[index(src)].push_back( ei);
+    return ei;
 }
 void cGraph::addEdge(
     const std::string &src,
@@ -85,11 +86,11 @@ vertex_t cGraph::findorAdd(const std::string &sn)
 {
     for (auto &n : vVertex)
     {
-        if (sn == n.get()->userName())
+        if (sn == n->userName())
             return n;
     }
-    // auto v = new cVertex(sn);
     vVertex.push_back(vertex_t(new cVertex(sn)));
+    vOutEdges.push_back({});
     return vVertex.back();
 }
 
@@ -109,13 +110,13 @@ std::string cGraph::text()
     return ss.str();
 }
 
-int cGraph::ID(const std::string &name)
-{
-    for (auto &v : vVertex)
-        if (v->userName() == name)
-            return v->ID();
-    return -1;
-}
+// int cGraph::ID(const std::string &name)
+// {
+//     for (auto &v : vVertex)
+//         if (v->userName() == name)
+//             return v->ID();
+//     return -1;
+// }
 
 std::vector<std::pair<std::string, std::string>>
 cGraph::getlinkedVerticesNames()
@@ -194,11 +195,10 @@ void cGraph::dfs(
         visitor(v);
         visited[index(v)] = true;
 
+
+        auto dbg = adjacentAll(v);
+
         for (vertex_t w : adjacentAll(v)) {
-            if( w->userName() == "b" )
-                {
-                    int dbg = 0;
-                }
             if (!visited[index(w)]) {
                 wait.push(w);
             }
@@ -311,7 +311,7 @@ std::vector<int> cGraph::dijsktra(
 vVertex_t cGraph::adjacentOut(vertex_t v)
 {
     vVertex_t ret;
-    for (int i : v->outEdges())
+    for (int i : vOutEdges[index(v)])
     {
         ret.push_back(vVertex[vEdgeDst[i]]);
     }
@@ -323,7 +323,7 @@ vVertex_t cGraph::adjacentIn(vertex_t v)
     int vi = index(v);
     for (auto t : vVertex)
     {
-        for (auto ei : t->outEdges())
+        for (auto ei : outEdges(t))
         {
             if (vEdgeDst[ei] == vi)
                 ret.push_back(t);
@@ -341,14 +341,14 @@ vVertex_t cGraph::adjacentAll(vertex_t v)
 
 int cGraph::edgeIndex(
     vertex_t src,
-    vertex_t dst) const
+    vertex_t dst)
 {
     int dsti = index(dst);
     for (vertex_t v : vVertex)
     {
         if (v != src)
             continue;
-        for (int i : v->outEdges())
+        for (int i : outEdges(v))
         {
             if (vEdgeDst[i] == dsti)
                 return i;

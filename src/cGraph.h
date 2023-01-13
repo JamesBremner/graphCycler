@@ -8,37 +8,18 @@
 
 class cVertex
 {
-    int myID;                   // node ID
-    static int myLastID;        // ID assigned to most recently constructed node
     std::string myUserName;     // name assigned to vertex by user ( input specification )
-    std::vector<int> vOutEdges; // edge indices that start at this vertex
++
 
 public:
     cVertex() {} // default constructor
     cVertex(const std::string &name);
-
-    /// @brief Add directed edge from this vertex
-    /// @param dst pointer to destination vertex
-
-    void addEdge(int edgeIndex)
-    {
-        vOutEdges.push_back(edgeIndex);
-    }
-
-    int ID() const
-    {
-        return myID;
-    }
 
     std::string userName() const
     {
         return myUserName;
     }
 
-    std::vector<int> outEdges()
-    {
-        return vOutEdges;
-    }
 };
 
 typedef std::shared_ptr<cVertex> vertex_t;
@@ -141,7 +122,12 @@ public:
     {
         return vVertex.size();
     }
-    int ID(const std::string &name);
+
+    std::vector<int> outEdges( vertex_t v)
+    {
+        return vOutEdges[index(v)];
+    }
+
 
     std::vector< std::pair<std::string,std::string>>
     getlinkedVerticesNames();
@@ -183,9 +169,10 @@ public:
 
 private:
     vVertex_t vVertex;                               // graph vertices
+    std::vector<std::string> vVertexName;            // vertex user names
+    std::vector<std::vector<int>> vOutEdges;         // edge indices that start at each vertex
     std::vector<int> vEdgeDst;                       // vertex indices of edge destinations
     std::vector<std::vector<std::string>> vEdgeAttr; // edge attributes
-
 
 
     int index(const std::string &sn) const;
@@ -193,6 +180,6 @@ private:
 
     int edgeIndex(
     vertex_t src,
-    vertex_t dst) const;
+    vertex_t dst);
 
 };
