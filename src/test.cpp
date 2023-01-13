@@ -10,9 +10,9 @@ TEST(adjacent)
         "a x ");
 
     auto v = graph.findorAdd("a");
-    CHECK_EQUAL(0,graph.adjacentIn(v).size());
-    CHECK_EQUAL(2,graph.adjacentOut(v).size());
-    CHECK_EQUAL(2,graph.adjacentAll(v).size());
+    CHECK_EQUAL(0, graph.adjacentIn(v).size());
+    CHECK_EQUAL(2, graph.adjacentOut(v).size());
+    CHECK_EQUAL(2, graph.adjacentAll(v).size());
 
     auto vls = graph.leaves();
     CHECK_EQUAL(2, vls.size());
@@ -67,7 +67,7 @@ TEST(breadth_first_search)
             visited.push_back(v->userName());
         });
 
-    CHECK_EQUAL(expected.size(),visited.size());
+    CHECK_EQUAL(expected.size(), visited.size());
     for (int k = 0; k < expected.size(); k++)
         CHECK_EQUAL(visited[k], expected[k]);
 }
@@ -83,7 +83,7 @@ TEST(depth_first_search)
         "a x "
         "x y ");
 
-    std::vector<std::string> expected{"a", "x", "y", "b", "c", "d"};
+    std::vector<std::string> expected{"a", "d", "c", "b", "x", "y"};
     std::vector<std::string> visited;
 
     graph.dfs(
@@ -95,6 +95,23 @@ TEST(depth_first_search)
 
     for (int k = 0; k < expected.size(); k++)
         CHECK_EQUAL(visited[k], expected[k]);
+
+    // two components
+    graph.setEdges(
+        "a b "
+        "b c "
+        "x y");
+    std::vector<std::string> expected2{"a", "b", "c"};
+    visited.clear();
+    graph.dfs(
+        "a",
+        [&](vertex_t v)
+        {
+            visited.push_back(v->userName());
+        });
+    CHECK_EQUAL(3,visited.size());
+    for (int k = 0; k < expected2.size(); k++)
+        CHECK_EQUAL(expected2[k],visited[k]);
 }
 TEST(dijsktra)
 {
@@ -224,6 +241,15 @@ TEST(SpanningTreeCost)
     }
 }
 
+TEST(componentCount)
+{
+    cGraph graph;
+    graph.setEdges(
+        "a b "
+        "b c "
+        "x y ");
+    CHECK_EQUAL(2, graph.componentCount());
+}
 
 main()
 {

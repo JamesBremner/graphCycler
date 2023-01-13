@@ -5,7 +5,6 @@
 #include <vector>
 #include <stack>
 #include <wex.h>
-#include "cxy.h"
 #include <autocell.h>
 #include "cObstacle.h"
 #include "cObstacleGUI.h"

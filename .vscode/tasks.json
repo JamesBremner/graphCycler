@@ -44,6 +44,22 @@
             }
         },
         {
+            "label": "test",
+            "options": { "cwd": "${workspaceFolder}" },
+            "command": "mingw32-make.exe",
+            "args": [ "-f", ".vscode/makefile", "test" ],
+            "problemMatcher": [ "$gcc" ],
+            "group": { "kind": "build", "isDefault": true }
+        },
+        {
+            "label": "testObstacle",
+            "options": { "cwd": "${workspaceFolder}" },
+            "command": "mingw32-make.exe",
+            "args": [ "-f", ".vscode/makefile", "testObstacle" ],
+            "problemMatcher": [ "$gcc" ],
+            "group": { "kind": "build", "isDefault": true }
+        },
+        {
             "label": "build",
             "options": {
                 "cwd": "${workspaceFolder}"

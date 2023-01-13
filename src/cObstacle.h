@@ -1,4 +1,5 @@
 #include "autocell.h"
+#include "cxy.h"
 #include "cGraph.h"
 
 /// @brief 2D grid cell that can contain obstacles
@@ -220,6 +221,15 @@ private:
     /// @brief Find tree that connects all required nodes
     /// @param start index to root node, defaults to 0
     //void spanningTree( int start = 0 );
+
+#ifdef UNIT_TEST
+public:
+    void setGraph( const cGraph& g )
+    {
+        myGraph = g;
+
+    }
+#endif
 };
 
     /// @brief read layout of obstacles from file

@@ -60,10 +60,17 @@ void cGraph::setEdges(
         iss >> n1 >> n2;
     }
 }
-void cGraph::addEdge(vertex_t src, vertex_t dst)
+int cGraph::addEdge(
+    vertex_t src,
+    vertex_t dst,
+    const std::string &sattr)
 {
     vEdgeDst.push_back(index(dst));
-    src->addEdge(vEdgeDst.size() - 1);
+    int index = vEdgeDst.size() - 1;
+    if (!sattr.empty())
+        vEdgeAttr[index][0] = sattr; // assumes just one attribute
+    src->addEdge(index);
+    return index;
 }
 void cGraph::addEdge(
     const std::string &src,
@@ -71,7 +78,7 @@ void cGraph::addEdge(
 {
     vertex_t sv = findorAdd(src);
     vertex_t dv = findorAdd(dst);
-    addEdge( sv, dv );
+    addEdge(sv, dv);
 }
 
 vertex_t cGraph::findorAdd(const std::string &sn)
@@ -172,22 +179,30 @@ void cGraph::dfs(
 
     /*  1 Start by putting one of the graph's vertices on top of a stack.
         2 Take the top vertex of the stack and add it to the visited list.
-        3 Add sdjscent vertices which aren't in the visited list to the top of the stack.
+        3 Add adjacent vertices which aren't in the visited list to the top of the stack.
         4 Keep repeating steps 2 and 3 until the stack is empty.
     */
 
     wait.push(vVertex[index(start)]);
+
     while (!wait.empty())
     {
         vertex_t v = wait.top();
         wait.pop();
-        int vi = index(v);
+        if( visited[index(v)] )
+            continue;
         visitor(v);
-        visited[vi] = true;
+        visited[index(v)] = true;
 
-        for (vertex_t w : adjacentOut(v))
-            if (!visited[index(w)])
+        for (vertex_t w : adjacentAll(v)) {
+            if( w->userName() == "b" )
+                {
+                    int dbg = 0;
+                }
+            if (!visited[index(w)]) {
                 wait.push(w);
+            }
+        }
     }
 }
 
@@ -345,7 +360,7 @@ int cGraph::edgeIndex(
 double cGraph::edgeAttrDouble(
     vertex_t src,
     vertex_t dst,
-    int attrIndex) 
+    int attrIndex)
 {
     int eindex = edgeIndex(src, dst);
     if (0 > eindex || eindex >= vEdgeAttr.size())
@@ -355,24 +370,24 @@ double cGraph::edgeAttrDouble(
     return atof(vEdgeAttr[eindex][attrIndex].c_str());
 }
 
-    double  cGraph::edgeAttrDouble(
-        const std::string & src,
-        const std::string & dst,
-        int attrIndex) 
-        {
-            return edgeAttrDouble(
-                findorAdd(src),
-                findorAdd(dst),
-                attrIndex );
-        }
+double cGraph::edgeAttrDouble(
+    const std::string &src,
+    const std::string &dst,
+    int attrIndex)
+{
+    return edgeAttrDouble(
+        findorAdd(src),
+        findorAdd(dst),
+        attrIndex);
+}
 
-vVertex_t cGraph::leaves() 
+vVertex_t cGraph::leaves()
 {
     vVertex_t ret;
-    for( vertex_t v : vVertex )
+    for (vertex_t v : vVertex)
     {
-        if( adjacentAll( v ).size() == 1 )
-            ret.push_back( v );
+        if (adjacentAll(v).size() == 1)
+            ret.push_back(v);
     }
     return ret;
 }
@@ -449,7 +464,7 @@ cGraph cGraph::spanningTree(const std::string &start)
 
     // add initial arbitrary link
     vertex_t v = vVertex[index(start)];
-    auto va = adjacentOut(v);
+    auto va = adjacentAll(v);
     if (!va.size())
         throw std::runtime_error(
             "spanning tree start vertex unconnected");
@@ -498,4 +513,30 @@ cGraph cGraph::spanningTree(const std::string &start)
     }
 
     return spanTree;
+}
+
+int cGraph::componentCount()
+{
+    int ret = 0;
+    std::vector<bool> visited(vertexCount(), false);
+    for (vertex_t v : vVertex)
+    {
+        //if this vertex already visited
+        // then it is part of a component that has already been counted
+        if (visited[index(v)]) {
+            continue;
+        }
+
+        // increment component count
+        ret++;
+
+        // vist all the vertices in the component
+        dfs(
+            v->userName(),
+            [&](vertex_t v)
+            {
+                visited[index(v)] = true;
+            });
+    }
+    return ret;
 }

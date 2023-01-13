@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 #include "cRunWatch.h"
-#include "cxy.h"
 #include "cObstacle.h"
 
 void read(
@@ -228,11 +227,10 @@ void cObstacle::connect()
                 continue;
 
             // OK to connect
-            // vL.push_back(std::make_tuple(n1, n2, d2));
             edgeDescriptors +=
-                std::to_string( n1->ID()) + " " +
-                std::to_string( n2->ID()) + " " +
-                std::to_string( d2 ) +
+                std::to_string(n1->ID()) + " " +
+                std::to_string(n2->ID()) + " " +
+                std::to_string(d2) +
                 " ";
 
             fconnected = true;
@@ -242,71 +240,71 @@ void cObstacle::connect()
                 "node unconnected");
     }
 
-    myGraph.setEdges( edgeDescriptors, 1 );
-
+    myGraph.setEdges(edgeDescriptors, 1);
 }
 
 vlink_t cObstacle::spanningTree_get()
 {
     vlink_t ret;
-   auto stlinks = mySpanningTree.getlinkedVerticesNames();
-   for( auto gl : stlinks )
-   {
-        link_t ol( 
+    auto stlinks = mySpanningTree.getlinkedVerticesNames();
+    for (auto gl : stlinks)
+    {
+        link_t ol(
             A->cell(std::atoi(gl.first.c_str())),
             A->cell(std::atoi(gl.second.c_str())),
             -1);
-        ret.push_back( ol );
-   }
-   return ret;
+        ret.push_back(ol);
+    }
+    return ret;
 }
 void cObstacle::tourSpanningTree()
 {
-        raven::set::cRunWatch aWatcher("tourSpanningTree");
+    raven::set::cRunWatch aWatcher("tourSpanningTree");
 
     int myBestCountRevisited = 1e7;
     vlink_t bestPath;
     std::vector<cOCell *> bestNodesRevisited;
 
     // loop over nodes
-    //for (int spanstart = 0; spanstart < vN.size(); spanstart++)
-    int spanstart = 0;
+    // for (int spanstart = 0; spanstart < vN.size(); spanstart++)
+    auto spanstart = myGraph.begin();
     {
-        //need only check spanning trees rooted near a margin
-        // if (adjacent(vN[spanstart], vL).size() != 8)
-        //     continue;
+        // need only check spanning trees rooted near a margin
+        //  if (adjacent(vN[spanstart], vL).size() != 8)
+        //      continue;
 
         // construct spanning tree starting at the node
-        mySpanningTree = myGraph.spanningTree(std::to_string(vN[spanstart]->ID()));
+        mySpanningTree = myGraph.spanningTree((*spanstart)->userName());
 
         // // connect spanning tree leaves
         auto connectedLeaves = mySpanningTree;
-        std::vector<cOCell *> leaves;
-        for (auto v : vN)
+        vVertex_t leaves = connectedLeaves.leaves();
+
+        std::cout << connectedLeaves.text();
+        std::cout << "leaves ";
+        for( vertex_t l : leaves )
         {
-            // if( mySpanningTree.adjacentOut(v).size() == 1 )
-            //     leaves.push_back(v);
+            std::cout << l->userName() << " ";
         }
-        // for (int kv = 0; kv < leaves.size(); kv++)
-        //     for (int kw = 0; kw < leaves.size(); kw++)
-        //     {
-        //         // no self cycles
-        //         if (kv == kw)
-        //             continue;
+        std::cout << "\n";
 
-        //         // check for unblocked connection
-        //         auto va = adjacent(leaves[kv], vL);
-        //         if (std::find(va.begin(), va.end(), leaves[kw]) == va.end())
-        //             continue;
+        for (int kv = 0; kv < leaves.size(); kv++)
+            for (int kw = 0; kw < leaves.size(); kw++)
+            {
+                // no self cycles
+                if (kv == kw)
+                    continue;
 
-        //         link_t l =
-        //             std::make_tuple(
-        //                 leaves[kv],
-        //                 leaves[kw],
-        //                 0);
-        //         linkCost(l);
-        //         connectedLeaves.push_back(l);
-        //     }
+                // check for unblocked connection
+                auto va = connectedLeaves.adjacentOut(leaves[kv]);
+                if (std::find(va.begin(), va.end(), leaves[kw]) == va.end())
+                    continue;
+
+                double cost = myGraph.edgeAttrDouble(leaves[kv], leaves[kw],0);
+                connectedLeaves.addEdge(leaves[kv], leaves[kw],
+                    std::to_string( cost ) );
+
+            }
 
         // // loop over leaf nodes in spanning tree
         // // to find the path starting at a leaf node
@@ -322,12 +320,11 @@ void cObstacle::tourSpanningTree()
         //     bestNodesRevisited = myNodesRevisited;
         //     if (!myNodesRevisited.size())
         //         break;
-        // }
-
-        // std::cout << spanstart << " of " << vN.size()
-        //           << " revisited " << bestCountRevisited << "\n";
     }
-    vPath = bestPath;
-    myNodesRevisited = bestNodesRevisited;
 
+    // std::cout << spanstart << " of " << vN.size()
+    //           << " revisited " << bestCountRevisited << "\n";
+
+    // vPath = bestPath;
+    // myNodesRevisited = bestNodesRevisited;
 }

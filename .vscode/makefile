@@ -42,6 +42,15 @@ OBJ_test = \
 	$(ODIR)/cGraph.o \
 	$(ODIR)/cutest.o
 
+OBJ_testObstacle = \
+	$(ODIR)/testObstacle.o \
+	$(ODIR)/cObstacle.o \
+	$(ODIR)/cGraph.o \
+		$(ODIR)/autocell.o \
+	$(ODIR)/cxy.o \
+		$(ODIR)/cRunWatch.o \
+	$(ODIR)/cutest.o
+
 ### COMPILE
 
 $(ODIR)/%.o: %.cpp cGraph.h
@@ -57,6 +66,10 @@ test: $(OBJ_test)
 	g++ $(OPT) \
 	-o bin/test.exe $^  \
 	$(static_link_flags) $(LIBS)
+
+testObstacle : $(OBJ_testObstacle)
+	g++ -o bin/testObstacle.exe \
+	$(OPT) $^ $(static_link_flags) $(LIBS)
 
 obstacle: $(OBJ_obstacle)
 	g++ -o bin/obstacle.exe \
