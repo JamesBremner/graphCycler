@@ -4,26 +4,9 @@
 #include <iostream>
 #include <functional>
 
-/// @brief A vertex is an element of a graph with edges connected to other vertices
 
-class cVertex
-{
-    std::string myUserName;     // name assigned to vertex by user ( input specification )
-+
-
-public:
-    cVertex() {} // default constructor
-    cVertex(const std::string &name);
-
-    std::string userName() const
-    {
-        return myUserName;
-    }
-
-};
-
-typedef std::shared_ptr<cVertex> vertex_t;
-typedef std::vector<vertex_t> vVertex_t;
+typedef int vertex_t;
+typedef std::vector<int> vVertex_t;
 
 class cGraph
 {
@@ -31,6 +14,8 @@ public:
 
 //////////  SETTERS ////////////////////////////////
 
+    /// @brief reset graph to empty default state ( undirected )
+    
     void clear();
 
     /** @brief populate the graph with edges
@@ -38,6 +23,11 @@ public:
 
         e.g. "a b\nb c" specifies a graph with two edges a -> b -> c
     */
+
+   void directed( bool f = false )
+   {
+    myfDirected = f;
+   }
 
     /// @brief find vertex by name, add to graph if not found
     /// @param sn vertex name
@@ -65,7 +55,7 @@ public:
 
     void bfs(
         const std::string &start,
-        std::function<void(vertex_t)> visitor);
+        std::function<void(int v)> visitor);
 
     /// @brief depth first search
     /// @param start
@@ -73,7 +63,7 @@ public:
 
     void dfs(
         const std::string &start,
-        std::function<void(vertex_t)> visitor);
+        std::function<void(int v)> visitor);
 
     /// @brief Shortest path between vertices using dijsktra algorithm
     /// @param start name of start vertex
@@ -120,13 +110,16 @@ public:
 
     int vertexCount() const
     {
-        return vVertex.size();
+        return vVertexName.size();
     }
 
     std::vector<int> outEdges( vertex_t v)
     {
-        return vOutEdges[index(v)];
+        return vOutEdges[v];
     }
+
+    int index(const std::string &sn) const;
+    std::string userName( int v ) const;
 
 
     std::vector< std::pair<std::string,std::string>>
@@ -158,25 +151,34 @@ public:
 
     std::string text();
 
-    vVertex_t::iterator begin()
-    {
-        return vVertex.begin();
-    }
-    vVertex_t::iterator end()
-    {
-        return vVertex.end();
-    }
-
 private:
-    vVertex_t vVertex;                               // graph vertices
-    std::vector<std::string> vVertexName;            // vertex user names
-    std::vector<std::vector<int>> vOutEdges;         // edge indices that start at each vertex
-    std::vector<int> vEdgeDst;                       // vertex indices of edge destinations
+
+    bool myfDirected;                                // true if user enters directed links
+
+    /* vertex user names
+
+        vVertex[ vi ] is the name of the vith zero-based vertex
+    */
+    std::vector<std::string> vVertexName;   
+    
+    /* edge indices that start at each vertex
+    
+        vOutEdges[vi][wi] is the index of the with edge starting at the vith vertex
+    */         
+    std::vector<std::vector<int>> vOutEdges;
+
+    /* vertex indices of edge destinations
+
+        vEdgeDst[ei] is the destination vertex index of the eith edge
+    */
+    std::vector<int> vEdgeDst;                       
+
+    /* edge attributes
+    
+        vEdgeAttr[ei][ai] is a string representing the aith attribute of the eith edge
+    */
     std::vector<std::vector<std::string>> vEdgeAttr; // edge attributes
 
-
-    int index(const std::string &sn) const;
-    int index(vertex_t v) const;
 
     int edgeIndex(
     vertex_t src,

@@ -17,7 +17,7 @@ main()
     {
         std::cout << "cycle: ";
         for( auto v : vv )
-            std::cout << v->userName() << " ";
+            std::cout << graph.userName(v) << " ";
         std::cout << "\n";
     }
 

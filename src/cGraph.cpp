@@ -5,14 +5,10 @@
 
 #include "cGraph.h"
 
-cVertex::cVertex(const std::string &name)
-    : myUserName(name)
-{
-}
-
 void cGraph::clear()
 {
-    vVertex.clear();
+    myfDirected = false;
+    vVertexName.clear();
     vEdgeDst.clear();
     vEdgeAttr.clear();
     vOutEdges.clear();
@@ -23,11 +19,10 @@ void cGraph::setEdges(const std::string &sEdges)
     clear();
     std::istringstream iss(sEdges);
     std::string n1, n2;
-    vVertex.clear();
     iss >> n1 >> n2;
     while (iss.good())
     {
-        addEdge(findorAdd(n1), findorAdd(n2));
+        addEdge(n1,n2);
         iss >> n1 >> n2;
     }
 }
@@ -38,10 +33,7 @@ void cGraph::setEdges(
     std::istringstream iss(sEdges);
     std::string n1, n2, sattr;
 
-    vVertex.clear();
-    vEdgeAttr.clear();
-    vEdgeDst.clear();
-    vOutEdges.clear();
+    clear();
 
     iss >> n1 >> n2;
     while (iss.good())
@@ -55,7 +47,9 @@ void cGraph::setEdges(
             vattr.push_back(sattr_one);
         }
         vEdgeAttr.push_back(vattr);
-        addEdge(findorAdd(n1), findorAdd(n2));
+        if( ! myfDirected )
+            vEdgeAttr.push_back(vattr);
+        addEdge(n1,n2);
 
         iss >> n1 >> n2;
     }
@@ -65,71 +59,85 @@ int cGraph::addEdge(
     vertex_t dst,
     const std::string &sattr)
 {
-    vEdgeDst.push_back(index(dst));
-    int ei = vEdgeDst.size() - 1;
+    //std::cout << "addedge indices " << src <<" "<< dst << "\n";
+    int ei = vEdgeDst.size(); // index of new edge
+    vEdgeDst.push_back(dst);  // store edge destination
+
     if (!sattr.empty())
         vEdgeAttr[ei][0] = sattr; // assumes just one attribute
-    int si = index(src);
-    vOutEdges[index(src)].push_back( ei);
+
+    vOutEdges[src].push_back(ei); // store new out edge for source vertex
+
     return ei;
 }
 void cGraph::addEdge(
     const std::string &src,
     const std::string &dst)
 {
+    //std::cout << "addedge names " << src <<" "<< dst << "\n";
     vertex_t sv = findorAdd(src);
     vertex_t dv = findorAdd(dst);
     addEdge(sv, dv);
+
+    /* An undirected ( default ) graph is modeled
+      with a directed graph with every pair of connected vertices
+      having two directed edges going in opposite directions
+    */
+    if (!myfDirected)
+        addEdge(dv, sv);
 }
 
 vertex_t cGraph::findorAdd(const std::string &sn)
 {
-    for (auto &n : vVertex)
+    int ret = -1;
+    for (auto &n : vVertexName)
     {
-        if (sn == n->userName())
-            return n;
+        ret++;
+        if (sn == n)
+            return ret;
     }
-    vVertex.push_back(vertex_t(new cVertex(sn)));
+    // vertex with this name absent
+    // add it
+    ret = vVertexName.size();
+    vVertexName.push_back(sn);
     vOutEdges.push_back({});
-    return vVertex.back();
+    return ret;
 }
 
 std::string cGraph::text()
 {
     std::stringstream ss;
 
-    for (auto &n : vVertex)
+    for (auto &n : vVertexName)
     {
-        ss << "node " << n->userName() << " linked to ";
-        for (auto &dst : adjacentOut(n))
+        ss << "node " << n << " linked to ";
+        for (auto &dst : adjacentOut(index(n)))
         {
-            ss << dst->userName() << " ";
+            ss << vVertexName[dst] << " ";
         }
         ss << "\n";
     }
     return ss.str();
 }
 
-// int cGraph::ID(const std::string &name)
-// {
-//     for (auto &v : vVertex)
-//         if (v->userName() == name)
-//             return v->ID();
-//     return -1;
-// }
-
 std::vector<std::pair<std::string, std::string>>
 cGraph::getlinkedVerticesNames()
 {
     std::vector<std::pair<std::string, std::string>> ret;
 
-    for (vertex_t v : vVertex)
+    int ni = -1;
+    for (auto &n : vVertexName)
     {
-        for (vertex_t w : adjacentOut(v))
+        ni++;
+        for (vertex_t w : adjacentOut(ni))
         {
-            ret.push_back(std::make_pair(
-                v->userName(),
-                w->userName()));
+            if( ! myfDirected )
+                if( ni > w )
+                    continue;
+            ret.push_back(
+                std::make_pair(
+                    n,
+                    vVertexName[w]));
         }
     }
     return ret;
@@ -143,10 +151,10 @@ void cGraph::bfs(
     std::queue<int> Q;
 
     // true for vertex that has been visited
-    std::vector<bool> visited(vVertex.size(), false);
+    std::vector<bool> visited(vVertexName.size(), false);
 
-    visitor(findorAdd(start));
     int si = index(start);
+    visitor(si);
     visited[si] = true;
     Q.push(si);
 
@@ -155,12 +163,11 @@ void cGraph::bfs(
         int iv = Q.front();
         Q.pop();
 
-        for (auto &w : adjacentOut(vVertex[iv]))
+        for (auto iw : adjacentOut(iv))
         {
-            int iw = index(w->userName());
             if (!visited[iw])
             {
-                visitor(w);
+                visitor(iw);
                 visited[iw] = true;
                 Q.push(iw);
             }
@@ -170,10 +177,10 @@ void cGraph::bfs(
 
 void cGraph::dfs(
     const std::string &start,
-    std::function<void(vertex_t)> visitor)
+    std::function<void(int v)> visitor)
 {
     // track visited vertices
-    std::vector<bool> visited(vVertex.size(), false);
+    std::vector<bool> visited(vVertexName.size(), false);
 
     // vertices waiting to be visited
     std::stack<vertex_t> wait;
@@ -184,25 +191,21 @@ void cGraph::dfs(
         4 Keep repeating steps 2 and 3 until the stack is empty.
     */
 
-    wait.push(vVertex[index(start)]);
+    wait.push(index(start));
 
     while (!wait.empty())
     {
         vertex_t v = wait.top();
         wait.pop();
-        if( visited[index(v)] )
+        if (visited[v])
             continue;
         visitor(v);
-        visited[index(v)] = true;
+        visited[v] = true;
 
-
-        auto dbg = adjacentAll(v);
-
-        for (vertex_t w : adjacentAll(v)) {
-            if (!visited[index(w)]) {
+        for (vertex_t w : adjacentAll(v))
+            if (!visited[w])
                 wait.push(w);
-            }
-        }
+
     }
 }
 
@@ -211,8 +214,8 @@ vVertex_t cGraph::path(
     const std::string &finish)
 {
     return path(
-        vVertex[index(start)],
-        vVertex[index(finish)]);
+        index(start),
+        index(finish));
 }
 vVertex_t cGraph::path(
     vertex_t start,
@@ -220,23 +223,23 @@ vVertex_t cGraph::path(
 {
     vVertex_t ret;
 
-    int si = index(start->userName());
-
+    // run Dijsktra finding path from start to every node
     auto pred = dijsktra(
-        vVertex[si]);
+        start);
 
-    int vi = index(finish->userName());
-    while (vi != si)
+    // pick out path to finish node
+    int vi = finish;
+    while (vi != start)
     {
         if (vi == -1)
         {
             ret.clear();
             return ret;
         }
-        ret.push_back(vVertex[vi]);
+        ret.push_back(vi);
         vi = pred[vi];
     }
-    ret.push_back(vVertex[si]);
+    ret.push_back(start);
 
     std::reverse(ret.begin(), ret.end());
 
@@ -247,30 +250,25 @@ std::vector<int> cGraph::dijsktra(
     vertex_t start)
 {
     // shortest distance from start to each node
-    std::vector<double> dist(vVertex.size(), INT_MAX);
+    std::vector<double> dist(vVertexName.size(), INT_MAX);
 
     // previous node on shortest path to each node
-    std::vector<int> pred(vVertex.size(), -1);
+    std::vector<int> pred(vVertexName.size(), -1);
 
-    std::vector<bool> sptSet(vVertex.size(), false); // sptSet[i] will be true if vertex i is included in shortest
-                                                     // path tree or shortest distance from src to i is finalized
-
-    int startIdx = std::distance(
-        vVertex.begin(),
-        std::find(vVertex.begin(), vVertex.end(),
-                  start));
+    std::vector<bool> sptSet(vVertexName.size(), false); // sptSet[i] will be true if vertex i is included in shortest
+                                                         // path tree or shortest distance from src to i is finalized
 
     // Distance of source vertex from itself is always 0
-    dist[startIdx] = 0;
-    pred[startIdx] = 0;
+    dist[start] = 0;
+    pred[start] = 0;
 
     // Find shortest path for all vertices
-    for (int count = 0; count < vVertex.size() - 1; count++)
+    for (int count = 0; count < vVertexName.size() - 1; count++)
     {
         // Pick the minimum distance vertex from the set of vertices not
         // yet processed. u is always equal to src in the first iteration.
         int min = INT_MAX, uidx;
-        for (int vidx = 0; vidx < vVertex.size(); vidx++)
+        for (int vidx = 0; vidx < vVertexName.size(); vidx++)
             if (sptSet[vidx] == false && dist[vidx] <= min)
             {
                 min = dist[vidx];
@@ -286,22 +284,18 @@ std::vector<int> cGraph::dijsktra(
         sptSet[uidx] = true;
 
         // Update dist value of the adjacent vertices of the picked vertex.
-        for (auto vp : adjacentOut(vVertex[uidx]))
+        for (auto vp : adjacentOut(uidx))
         {
-            int vidx = std::distance(
-                vVertex.begin(),
-                std::find(vVertex.begin(), vVertex.end(),
-                          vp));
-            if (sptSet[vidx])
+            if (sptSet[vp])
                 continue; // already processed
 
             // Update dist[v] only if total weight of path from src to  v through u is
             // smaller than current value of dist[v]
             double cost = 1;
-            if (dist[uidx] + cost < dist[vidx])
+            if (dist[uidx] + cost < dist[vp])
             {
-                dist[vidx] = dist[uidx] + cost;
-                pred[vidx] = uidx;
+                dist[vp] = dist[uidx] + cost;
+                pred[vp] = uidx;
             }
         }
     }
@@ -310,23 +304,31 @@ std::vector<int> cGraph::dijsktra(
 
 vVertex_t cGraph::adjacentOut(vertex_t v)
 {
-    vVertex_t ret;
-    for (int i : vOutEdges[index(v)])
+    std::vector<int> ret;
+    for( int ei : vOutEdges[v] )
     {
-        ret.push_back(vVertex[vEdgeDst[i]]);
+        ret.push_back( vEdgeDst[ei] );
     }
     return ret;
 }
 vVertex_t cGraph::adjacentIn(vertex_t v)
 {
     vVertex_t ret;
-    int vi = index(v);
-    for (auto t : vVertex)
+    if (!myfDirected)
     {
-        for (auto ei : outEdges(t))
+        for (int t : vOutEdges[v])
+            ret.push_back(t);
+        return ret;
+    }
+
+    int i = -1;
+    for (auto t : vOutEdges)
+    {
+        i++;
+        for (auto ei : t)
         {
-            if (vEdgeDst[ei] == vi)
-                ret.push_back(t);
+            if (ei == v)
+                ret.push_back(i);
         }
     }
     return ret;
@@ -334,8 +336,12 @@ vVertex_t cGraph::adjacentIn(vertex_t v)
 vVertex_t cGraph::adjacentAll(vertex_t v)
 {
     vVertex_t ret(adjacentOut(v));
-    vVertex_t vin = adjacentIn(v);
-    ret.insert(ret.end(), vin.begin(), vin.end());
+
+    if (myfDirected)
+    {
+        vVertex_t vin = adjacentIn(v);
+        ret.insert(ret.end(), vin.begin(), vin.end());
+    }
     return ret;
 }
 
@@ -343,17 +349,10 @@ int cGraph::edgeIndex(
     vertex_t src,
     vertex_t dst)
 {
-    int dsti = index(dst);
-    for (vertex_t v : vVertex)
-    {
-        if (v != src)
-            continue;
-        for (int i : outEdges(v))
-        {
-            if (vEdgeDst[i] == dsti)
-                return i;
-        }
-    }
+    for (int ei : vOutEdges[src])
+        if (vEdgeDst[ei] == dst)
+            return ei;
+
     return -1;
 }
 
@@ -384,7 +383,7 @@ double cGraph::edgeAttrDouble(
 vVertex_t cGraph::leaves()
 {
     vVertex_t ret;
-    for (vertex_t v : vVertex)
+    for (int v = 0; v < vVertexName.size(); v++)
     {
         if (adjacentAll(v).size() == 1)
             ret.push_back(v);
@@ -395,17 +394,18 @@ vVertex_t cGraph::leaves()
 int cGraph::index(const std::string &sn) const
 {
     int ret = 0;
-    for (auto &n : vVertex)
+    for (auto &n : vVertexName)
     {
-        if (sn == n.get()->userName())
+        if (sn == n)
             return ret;
         ret++;
     }
     return -1;
 }
-int cGraph::index(vertex_t v) const
+
+std::string cGraph::userName(int v) const
 {
-    return index(v->userName());
+    return vVertexName[v];
 }
 
 std::vector<std::vector<vertex_t>>
@@ -414,27 +414,27 @@ cGraph::dfs_cycle_finder(const std::string &start)
     std::vector<std::vector<vertex_t>> ret;
 
     // track visited vertices
-    std::vector<bool> visited(vVertex.size(), false);
+    std::vector<bool> visited(vVertexName.size(), false);
 
     // vertices waiting to be processed
     std::stack<vertex_t> wait;
 
     // start at the beginning
-    wait.push(vVertex[index(start)]);
+    wait.push(index(start));
 
     // continue until no more vertices need processing
     while (!wait.empty())
     {
         vertex_t v = wait.top();
         wait.pop();
-        int vi = index(v);
+        int vi = v;
         if (!visited[vi])
         {
             visited[vi] = true;
 
             for (vertex_t w : adjacentOut(v))
             {
-                if (!visited[index(w)])
+                if (!visited[w])
                 {
                     wait.push(w);
                 }
@@ -460,36 +460,36 @@ cGraph cGraph::spanningTree(const std::string &start)
     cGraph spanTree;
 
     // track visited vertices
-    std::vector<bool> visited(vVertex.size(), false);
+    std::vector<bool> visited(vVertexName.size(), false);
 
     // add initial arbitrary link
-    vertex_t v = vVertex[index(start)];
+    vertex_t v = index(start);
     auto va = adjacentAll(v);
     if (!va.size())
         throw std::runtime_error(
             "spanning tree start vertex unconnected");
     auto w = va[0];
-    spanTree.addEdge(v->userName(), w->userName());
-    visited[index(v)] = true;
-    visited[index(w)] = true;
+    spanTree.addEdge(vVertexName[v], vVertexName[w]);
+    visited[v] = true;
+    visited[w] = true;
 
     // while nodes remain outside of span
-    while (vVertex.size() > spanTree.vertexCount())
+    while (vVertexName.size() > spanTree.vertexCount())
     {
         double min_cost = INT_MAX;
         std::pair<vertex_t, vertex_t> bestLink;
 
         // loop over nodes in span
-        for (int kv = 0; kv < vVertex.size(); kv++)
+        for (int kv = 0; kv < vVertexName.size(); kv++)
         {
             if (!visited[kv])
                 continue;
-            v = vVertex[kv];
+            v = kv;
 
             // loop over adjacent nodes not in span
             for (auto w : adjacentOut(v))
             {
-                if (visited[index(w)])
+                if (visited[w])
                     continue;
 
                 double cost = edgeAttrDouble(v, w, 0);
@@ -506,10 +506,10 @@ cGraph cGraph::spanningTree(const std::string &start)
 
         // add cheapest link between node in tree to node not yet in tree
         spanTree.addEdge(
-            bestLink.first->userName(),
-            bestLink.second->userName());
-        visited[index(bestLink.first)] = true;
-        visited[index(bestLink.second)] = true;
+            vVertexName[bestLink.first],
+            vVertexName[bestLink.second]);
+        visited[bestLink.first] = true;
+        visited[bestLink.second] = true;
     }
 
     return spanTree;
@@ -519,11 +519,12 @@ int cGraph::componentCount()
 {
     int ret = 0;
     std::vector<bool> visited(vertexCount(), false);
-    for (vertex_t v : vVertex)
+    for (int v = 0; v < vVertexName.size(); v++)
     {
-        //if this vertex already visited
-        // then it is part of a component that has already been counted
-        if (visited[index(v)]) {
+        // if this vertex already visited
+        //  then it is part of a component that has already been counted
+        if (visited[v])
+        {
             continue;
         }
 
@@ -532,10 +533,10 @@ int cGraph::componentCount()
 
         // vist all the vertices in the component
         dfs(
-            v->userName(),
-            [&](vertex_t v)
+            vVertexName[v],
+            [&](int n)
             {
-                visited[index(v)] = true;
+                visited[n] = true;
             });
     }
     return ret;
