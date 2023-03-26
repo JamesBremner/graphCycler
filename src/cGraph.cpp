@@ -16,7 +16,6 @@ void cGraph::clear()
 
 void cGraph::setEdges(const std::string &sEdges)
 {
-    clear();
     std::istringstream iss(sEdges);
     std::string n1, n2;
     iss >> n1 >> n2;

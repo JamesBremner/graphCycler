@@ -5,7 +5,8 @@ main()
 {
     // construct test graph
     cGraph graph;
-    graph.setEdges("a b\nb c\nc d\nd a");
+    graph.directed(true);
+    graph.setEdges("a b\nb c\nc d\nd a\n");
 
     // display graph edges
     std::cout << graph.text();
